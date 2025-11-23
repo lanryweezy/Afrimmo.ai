@@ -1,11 +1,13 @@
+
 import React, { useState, useEffect } from 'react';
 import Card from './Card';
 import Button from './Button';
 import { Lead, LeadStatus, ChatMessage, LeadInteraction } from '../types';
-import { FireIcon, SparklesIcon, HistoryIcon, NoteIcon, LeadsIcon, ChatBubbleLeftRightIcon, WhatsAppIcon, CheckIcon } from './IconComponents';
+import { FireIcon, SparklesIcon, HistoryIcon, NoteIcon, LeadsIcon, ChatBubbleLeftRightIcon, WhatsAppIcon, CheckIcon, DocumentTextIcon } from './IconComponents';
 import WhatsAppChat from './WhatsAppChat';
+import DealDocs from './DealDocs';
 
-type DetailTab = 'details' | 'chat';
+type DetailTab = 'details' | 'chat' | 'docs';
 
 const statusConfig: Record<LeadStatus, { color: string, label: string }> = {
     New: { color: 'bg-blue-500/10 text-blue-400 border-blue-500/20', label: 'New' },
@@ -87,6 +89,8 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
         setSelectedLead(lead);
         if (lead.source === 'WhatsApp' && lead.conversation && lead.conversation.length > 0) {
             setActiveDetailTab('chat');
+        } else if (lead.status === 'Offer' || lead.status === 'Closed') {
+            setActiveDetailTab('docs');
         } else {
             setActiveDetailTab('details');
         }
@@ -284,20 +288,27 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
                             </div>
                             
                             {/* Tab Switcher */}
-                            {selectedLead.source === 'WhatsApp' && (
-                                <div className="flex border-b border-slate-800 bg-slate-900/30">
+                            <div className="flex border-b border-slate-800 bg-slate-900/30 overflow-x-auto">
+                                {selectedLead.source === 'WhatsApp' && (
                                     <TabButton icon={<ChatBubbleLeftRightIcon className="w-4 h-4"/>} label="Live Chat" isActive={activeDetailTab === 'chat'} onClick={() => setActiveDetailTab('chat')} />
-                                    <TabButton icon={<NoteIcon className="w-4 h-4"/>} label="CRM Profile" isActive={activeDetailTab === 'details'} onClick={() => setActiveDetailTab('details')} />
-                                </div>
-                            )}
+                                )}
+                                <TabButton icon={<NoteIcon className="w-4 h-4"/>} label="CRM Profile" isActive={activeDetailTab === 'details'} onClick={() => setActiveDetailTab('details')} />
+                                <TabButton icon={<DocumentTextIcon className="w-4 h-4"/>} label="Deal Docs" isActive={activeDetailTab === 'docs'} onClick={() => setActiveDetailTab('docs')} />
+                            </div>
 
                            <div className="flex-1 overflow-y-auto relative bg-slate-950/50">
                                {/* BACKGROUND PATTERN FOR CHAT */}
                                {activeDetailTab === 'chat' && <div className="absolute inset-0 opacity-5 pointer-events-none" style={{backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)", backgroundSize: "20px 20px"}}></div>}
 
-                                {(activeDetailTab === 'chat' && selectedLead.source === 'WhatsApp') ? (
+                                {activeDetailTab === 'chat' && selectedLead.source === 'WhatsApp' && (
                                     <WhatsAppChat lead={selectedLead} onSendMessage={handleSendMessage} onUpdateHistory={handleUpdateLeadHistory} />
-                                ) : (
+                                )}
+
+                                {activeDetailTab === 'docs' && (
+                                    <DealDocs lead={selectedLead} />
+                                )}
+
+                                {activeDetailTab === 'details' && (
                                     <div className="p-6 max-w-4xl mx-auto space-y-6">
                                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                             {/* AI Insight Card */}
@@ -361,7 +372,7 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
 };
 
 const TabButton: React.FC<{icon: React.ReactNode, label: string, isActive: boolean, onClick: () => void}> = ({ icon, label, isActive, onClick}) => (
-    <button onClick={onClick} className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-all border-b-2 ${isActive ? 'border-emerald-500 text-emerald-400 bg-emerald-500/5' : 'border-transparent text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+    <button onClick={onClick} className={`flex-1 min-w-fit px-4 py-3 text-sm font-medium transition-all border-b-2 flex items-center justify-center gap-2 whitespace-nowrap ${isActive ? 'border-emerald-500 text-emerald-400 bg-emerald-500/5' : 'border-transparent text-slate-400 hover:text-white hover:bg-slate-800'}`}>
         {icon}
         {label}
     </button>

@@ -474,7 +474,6 @@ export const getGoogleKeywords = async (propertyDetails: string): Promise<string
     - Return a valid JSON array of strings.
     `;
      try {
-        // FIX: Added config to request a JSON response, improving reliability.
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: prompt,
@@ -516,15 +515,15 @@ export const scoreLead = async (lead: Lead): Promise<{score: number; temperature
     Instructions:
     1.  **Score:** Provide a numerical score from 1 to 100 representing the lead's priority. A higher score means higher priority. Consider factors like recency of contact, engagement level (e.g., scheduling a viewing is high engagement), and current status. A 'New' lead with recent contact is high priority. A 'Nurturing' lead with old contact is lower.
     2.  **Temperature:** Categorize the lead as 'Hot', 'Warm', or 'Cold' based on the score. (Hot > 75, Warm > 40, Cold <= 40).
-    3.  **Justification:** Briefly explain why you gave this score.
-    4.  **Next Action:** Suggest a concrete, actionable next step for the real estate agent to take.
+    3.  **Justification:** Briefly explain why you gave this score (max 2 sentences).
+    4.  **Next Action:** Suggest a concrete, actionable next step for the real estate agent to take (max 1 sentence).
 
     Return a valid JSON object.
     `;
 
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-pro',
+            model: 'gemini-2.5-flash',
             contents: prompt,
             config: {
                 responseMimeType: 'application/json',
@@ -536,7 +535,8 @@ export const scoreLead = async (lead: Lead): Promise<{score: number; temperature
                         justification: { type: Type.STRING },
                         nextAction: { type: Type.STRING }
                     }
-                }
+                },
+                maxOutputTokens: 1024,
             }
         });
         const text = response.text;
@@ -580,5 +580,42 @@ export const runChatAction = async (conversationHistory: string): Promise<any> =
     } catch (error) {
         console.error("Error running chat action:", error);
         throw new Error("AI action failed. The service may be unavailable.");
+    }
+};
+
+export const generateLegalAgreement = async (
+    type: string, 
+    parties: {agent: string, client: string}, 
+    propertyAddress: string, 
+    price: string, 
+    terms: string
+): Promise<string> => {
+    const prompt = `
+    You are a professional legal assistant for a real estate agency in Africa. 
+    Draft a formal **${type}** document.
+
+    **Details:**
+    - **Agency:** ${parties.agent}
+    - **Client:** ${parties.client}
+    - **Property Address:** ${propertyAddress}
+    - **Agreed Value:** ${price}
+    - **Key Terms/Notes:** ${terms}
+
+    **Instructions:**
+    - Create a structured, professional legal document suitable for printing.
+    - Include sections for Parties, Property Description, Consideration (Price), Covenants, and Signatures.
+    - Ensure tone is formal and legally binding.
+    - Return the text in plain format (no markdown code blocks) suitable for a text editor.
+    `;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+        });
+        return response.text ?? "Unable to generate agreement.";
+    } catch (error) {
+        console.error("Error generating agreement:", error);
+        throw new Error("Failed to generate agreement.");
     }
 };
