@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import BottomNavBar from './components/BottomNavBar';
@@ -36,10 +35,46 @@ const mockLeadsData: Omit<Lead, 'score' | 'temperature' | 'justification' | 'nex
 ];
 
 const mockListingsData: Listing[] = [
-    { id: '1', address: '12 Banana Island Rd, Ikoyi, Lagos', price: '₦850,000,000', status: 'Available', imageUrl: 'https://picsum.photos/seed/house1/400/300', beds: 5, baths: 6, size: 700, amenities: ['Swimming Pool', 'Cinema', 'Gym', 'Automation'] },
-    { id: '2', address: '8A Admiralty Way, Lekki Phase 1, Lagos', price: '₦450,000,000', status: 'Under Offer', imageUrl: 'https://picsum.photos/seed/house2/400/300', beds: 4, baths: 5, size: 550, amenities: ['Boys Quarter', 'Fitted Kitchen', 'Pool'] },
-    { id: '3', address: '25 Opebi Rd, Ikeja, Lagos', price: '₦180,000,000', status: 'Available', imageUrl: 'https://picsum.photos/seed/house3/400/300', beds: 4, baths: 4, size: 480, amenities: ['Security', 'Parking', 'Water Treatment'] },
-    { id: '4', address: 'Estate 5, VGC, Lagos', price: '₦320,000,000', status: 'Sold', imageUrl: 'https://picsum.photos/seed/house4/400/300', beds: 5, baths: 5, size: 600, amenities: ['Garden', 'Playground', 'Solar Power'] },
+    { 
+        id: '1', 
+        address: '12 Banana Island Rd, Ikoyi, Lagos', 
+        price: '₦850,000,000', 
+        status: 'Available', 
+        imageUrl: 'https://picsum.photos/seed/house1/400/300', 
+        images: ['https://picsum.photos/seed/house1/800/600', 'https://picsum.photos/seed/house1-2/800/600', 'https://picsum.photos/seed/house1-3/800/600'],
+        beds: 5, baths: 6, size: 700, 
+        amenities: ['Swimming Pool', 'Cinema', 'Gym', 'Automation'] 
+    },
+    { 
+        id: '2', 
+        address: '8A Admiralty Way, Lekki Phase 1, Lagos', 
+        price: '₦450,000,000', 
+        status: 'Under Offer', 
+        imageUrl: 'https://picsum.photos/seed/house2/400/300', 
+        images: ['https://picsum.photos/seed/house2/800/600', 'https://picsum.photos/seed/house2-2/800/600', 'https://picsum.photos/seed/house2-3/800/600'],
+        beds: 4, baths: 5, size: 550, 
+        amenities: ['Boys Quarter', 'Fitted Kitchen', 'Pool'] 
+    },
+    { 
+        id: '3', 
+        address: '25 Opebi Rd, Ikeja, Lagos', 
+        price: '₦180,000,000', 
+        status: 'Available', 
+        imageUrl: 'https://picsum.photos/seed/house3/400/300', 
+        images: ['https://picsum.photos/seed/house3/800/600', 'https://picsum.photos/seed/house3-2/800/600'],
+        beds: 4, baths: 4, size: 480, 
+        amenities: ['Security', 'Parking', 'Water Treatment'] 
+    },
+    { 
+        id: '4', 
+        address: 'Estate 5, VGC, Lagos', 
+        price: '₦320,000,000', 
+        status: 'Sold', 
+        imageUrl: 'https://picsum.photos/seed/house4/400/300', 
+        images: ['https://picsum.photos/seed/house4/800/600', 'https://picsum.photos/seed/house4-2/800/600', 'https://picsum.photos/seed/house4-3/800/600'],
+        beds: 5, baths: 5, size: 600, 
+        amenities: ['Garden', 'Playground', 'Solar Power'] 
+    },
 ];
 
 const App: React.FC = () => {

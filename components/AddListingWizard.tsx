@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef } from 'react';
 import Button from './Button';
 import { generateSocialBundle, generateListingVideo } from '../services/geminiService';
@@ -86,6 +87,7 @@ const AddListingWizard: React.FC<AddListingWizardProps> = ({ onClose, onPublish 
             price,
             status: 'Available',
             imageUrl: selectedImages[0] || '', // Use the first image as the cover
+            images: selectedImages,
             beds: parseInt(beds) || 0,
             baths: parseInt(baths) || 0,
             size: parseInt(size) || 0,

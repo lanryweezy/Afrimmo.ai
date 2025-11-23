@@ -1,4 +1,5 @@
 
+
 import { GoogleGenAI, Type, FunctionDeclaration, VideoGenerationReferenceType, VideoGenerationReferenceImage } from "@google/genai";
 import { ContentType, PropertyDetailsForValuation, ValuationResponse, Platform, MarketingObjective, AudiencePersona, AdCopy, Lead, SocialBundle, TargetIncome } from '../types';
 
@@ -118,10 +119,42 @@ export const generateSocialBundle = async (propertyDetails: string, price: strin
     }
 }
 
-export const generateListingVideo = async (imagesBase64: string[], propertyDetails: string): Promise<string> => {
+async function urlToBase64(url: string): Promise<string> {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        resolve(reader.result as string);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+export const generateListingVideo = async (images: string[], propertyDetails: string): Promise<string> => {
     try {
+        // Handle if images are URLs or Base64. If URL, fetch and convert.
+        const processedImages: string[] = [];
+        for (const img of images) {
+            if (img.startsWith('http')) {
+                try {
+                    const b64 = await urlToBase64(img);
+                    processedImages.push(b64);
+                } catch (e) {
+                    console.warn("Failed to fetch image for video generation:", img);
+                }
+            } else {
+                processedImages.push(img);
+            }
+        }
+
+        if (processedImages.length === 0) {
+            throw new Error("No valid images available for video generation.");
+        }
+
         // We can use up to 3 reference images for Veo 3.1
-        const selectedImages = imagesBase64.slice(0, 3);
+        const selectedImages = processedImages.slice(0, 3);
         
         const referenceImagesPayload: VideoGenerationReferenceImage[] = [];
         for (const img of selectedImages) {
@@ -165,7 +198,7 @@ export const generateListingVideo = async (imagesBase64: string[], propertyDetai
 
     } catch (error) {
         console.error("Error generating video:", error);
-        throw new Error("Failed to generate video. Please ensure you have selected valid photos.");
+        throw new Error("Failed to generate video. Please ensure you have valid photos.");
     }
 };
 

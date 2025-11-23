@@ -1,4 +1,5 @@
 
+
 export type Page = 'today' | 'leads' | 'listings' | 'marketing' | 'tools' | 'content-studio' | 'social-publisher' | 'whatsapp-automator' | 'market-insights' | 'property-valuator';
 
 export enum ContentType {
@@ -106,6 +107,7 @@ export interface Listing {
     price: string;
     status: ListingStatus;
     imageUrl: string;
+    images: string[];
     beds: number;
     baths: number;
     size: number; // in sqm

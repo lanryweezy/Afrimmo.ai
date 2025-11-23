@@ -1,10 +1,11 @@
 
+
 import React, { useState, useEffect } from 'react';
 import Card from './Card';
 import Button from './Button';
 import { ContentType, AudiencePersona, MarketingObjective, Listing } from '../types';
-import { generateMarketingContent } from '../services/geminiService';
-import { SparklesIcon, ClipboardIcon, CheckIcon, CalendarDaysIcon } from './IconComponents';
+import { generateMarketingContent, generateListingVideo } from '../services/geminiService';
+import { SparklesIcon, ClipboardIcon, CheckIcon, CalendarDaysIcon, VideoIcon } from './IconComponents';
 
 interface ContentStudioProps {
   onContentGenerated: (data: { propertyDetails: string, objective: MarketingObjective, text: string[], image: string | null, video: string | null }) => void;
@@ -21,9 +22,11 @@ const ContentStudio: React.FC<ContentStudioProps> = ({ onContentGenerated, onSch
   const [tone, setTone] = useState('Professional');
   
   const [isLoading, setIsLoading] = useState(false);
+  const [isVideoLoading, setIsVideoLoading] = useState(false);
   const [error, setError] = useState('');
   
   const [generatedContent, setGeneratedContent] = useState<string[]>([]);
+  const [generatedVideo, setGeneratedVideo] = useState<string | null>(null);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -31,6 +34,8 @@ const ContentStudio: React.FC<ContentStudioProps> = ({ onContentGenerated, onSch
       const amenities = selectedListing.amenities && selectedListing.amenities.length > 0 ? ` Key Amenities: ${selectedListing.amenities.join(', ')}.` : '';
       const details = `${selectedListing.beds} bedroom, ${selectedListing.baths} bathroom property at ${selectedListing.address}. Price: ${selectedListing.price}. Size: ${selectedListing.size} sqm.${amenities}`;
       setPropertyDetails(details);
+      setGeneratedVideo(null);
+      setGeneratedContent([]);
     } else {
         setPropertyDetails(''); // Clear details if selection is cleared
     }
@@ -54,7 +59,7 @@ const ContentStudio: React.FC<ContentStudioProps> = ({ onContentGenerated, onSch
         objective: marketingObjective,
         text: content,
         image: selectedListing?.imageUrl || null, // Use existing image if available
-        video: null
+        video: generatedVideo
       });
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
@@ -62,6 +67,31 @@ const ContentStudio: React.FC<ContentStudioProps> = ({ onContentGenerated, onSch
       setIsLoading(false);
     }
   };
+
+  const handleGenerateVideo = async () => {
+    if (!selectedListing || !selectedListing.images || selectedListing.images.length === 0) {
+        setError("This listing has no images to generate a video.");
+        return;
+    }
+    setIsVideoLoading(true);
+    setError('');
+    setGeneratedVideo(null);
+    try {
+        const video = await generateListingVideo(selectedListing.images, propertyDetails);
+        setGeneratedVideo(video);
+        onContentGenerated({
+            propertyDetails,
+            objective: marketingObjective,
+            text: generatedContent,
+            image: selectedListing?.imageUrl || null,
+            video: video
+        });
+    } catch (err: any) {
+        setError(err.message);
+    } finally {
+        setIsVideoLoading(false);
+    }
+  }
   
   const handleCopy = (text: string, index: number) => {
       navigator.clipboard.writeText(text);
@@ -122,15 +152,45 @@ const ContentStudio: React.FC<ContentStudioProps> = ({ onContentGenerated, onSch
             </div>
           </div>
           
-           <div className="pt-2">
+           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
              <Button type="submit" isLoading={isLoading} icon={<SparklesIcon className="w-5 h-5"/>} className="w-full">
                 Generate Text Content
             </Button>
+            {selectedListing && (
+                <Button 
+                    type="button" 
+                    onClick={handleGenerateVideo} 
+                    isLoading={isVideoLoading} 
+                    icon={<VideoIcon className="w-5 h-5"/>} 
+                    className="w-full bg-purple-600 hover:bg-purple-500 border border-purple-500/30"
+                >
+                    Generate Video Tour
+                </Button>
+            )}
            </div>
           {error && <p className="text-red-400 text-sm text-center">{error}</p>}
         </form>
       </Card>
       
+      {generatedVideo && (
+        <Card className="animate-fade-in border border-purple-500/30">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2"><VideoIcon className="w-6 h-6 text-purple-400"/> Generated Video Tour</h2>
+            <div className="aspect-video bg-black rounded-lg overflow-hidden relative shadow-lg">
+                 <video src={generatedVideo} controls autoPlay loop className="w-full h-full object-contain" />
+            </div>
+            <div className="flex justify-end mt-4">
+                 <Button variant="secondary" onClick={() => {
+                     const a = document.createElement('a');
+                     a.href = generatedVideo;
+                     a.download = 'property_tour.mp4';
+                     a.click();
+                 }}>
+                    Download Video
+                </Button>
+            </div>
+        </Card>
+      )}
+
       {(isLoading || generatedContent.length > 0) && (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-white text-center">Generated Text Results</h2>
