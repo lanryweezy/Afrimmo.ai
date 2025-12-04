@@ -1,5 +1,7 @@
 {
   "name": "Afrimmo AI Agent",
   "description": "An AI-powered assistant for real estate agents in Africa, designed to streamline marketing, lead management, and sales through automated content creation and messaging, integrated with platforms like WhatsApp and Instagram.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [
+    "microphone"
+  ]
 }

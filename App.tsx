@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import BottomNavBar from './components/BottomNavBar';
@@ -6,6 +8,7 @@ import Leads from './components/Leads';
 import Listings from './components/Listings';
 import Marketing from './components/Marketing';
 import Tools from './components/Tools';
+import Settings from './components/Settings';
 import { Page, Lead, Listing, LeadStatus } from './types';
 import { scoreLead } from './services/geminiService';
 import Sidebar from './components/Sidebar';
@@ -128,6 +131,8 @@ const App: React.FC = () => {
         return <Marketing selectedListing={selectedListingForMarketing} clearSelectedListing={clearSelectedListingForMarketing} />;
       case 'tools':
         return <Tools />;
+      case 'settings':
+        return <Settings />;
       default:
         return <Today setActivePage={setCurrentPage} leads={leads} listings={listings} />;
     }

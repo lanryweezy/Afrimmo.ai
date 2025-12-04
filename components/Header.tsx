@@ -16,6 +16,7 @@ const pageTitles: Record<Page, string> = {
   'market-insights': 'Market Insights',
   'property-valuator': 'AI Valuator',
   'social-publisher': 'Social Publisher',
+  settings: 'Settings & Billing',
 };
 
 const Header: React.FC<HeaderProps> = ({ currentPage }) => {

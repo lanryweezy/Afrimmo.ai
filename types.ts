@@ -1,6 +1,6 @@
 
 
-export type Page = 'today' | 'leads' | 'listings' | 'marketing' | 'tools' | 'content-studio' | 'social-publisher' | 'whatsapp-automator' | 'market-insights' | 'property-valuator';
+export type Page = 'today' | 'leads' | 'listings' | 'marketing' | 'tools' | 'content-studio' | 'social-publisher' | 'whatsapp-automator' | 'market-insights' | 'property-valuator' | 'settings';
 
 export enum ContentType {
   Instagram = 'Instagram Post',

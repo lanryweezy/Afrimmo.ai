@@ -1,6 +1,8 @@
+
+
 import React from 'react';
 import { Page } from '../types';
-import { TodayIcon, LeadsIcon, ListingsIcon, MarketingIcon, ToolsIcon } from './IconComponents';
+import { TodayIcon, LeadsIcon, ListingsIcon, MarketingIcon, ToolsIcon, SettingsIcon } from './IconComponents';
 
 interface SidebarProps {
   currentPage: Page;
@@ -85,10 +87,21 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
                 icon={<ToolsIcon className="w-5 h-5" />}
                 />
             </nav>
+
+             <div className="mt-8 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 px-4">System</div>
+             <nav className="space-y-1">
+                 <NavItem 
+                    page="settings" 
+                    label="Settings & Billing" 
+                    currentPage={currentPage} 
+                    setCurrentPage={setCurrentPage}
+                    icon={<SettingsIcon className="w-5 h-5" />}
+                />
+             </nav>
         </div>
 
         <div className="mt-auto pt-6 border-t border-slate-800/60">
-             <button className="flex items-center w-full p-3 rounded-xl hover:bg-slate-900 transition-colors group">
+             <button onClick={() => setCurrentPage('settings')} className="flex items-center w-full p-3 rounded-xl hover:bg-slate-900 transition-colors group">
                 <div className="relative">
                     <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="User" className="w-10 h-10 rounded-full border-2 border-slate-800 group-hover:border-emerald-500 transition-colors object-cover" />
                     <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-slate-950 rounded-full"></div>

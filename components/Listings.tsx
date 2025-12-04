@@ -5,7 +5,7 @@ import Card from './Card';
 import Button from './Button';
 import AddListingWizard from './AddListingWizard';
 import { Listing, ListingStatus } from '../types';
-import { ArrowLeftIcon } from './IconComponents';
+import { ArrowLeftIcon, SparklesIcon, MarketingIcon, ShareIcon } from './IconComponents';
 
 interface ListingsProps {
     listings: Listing[];
@@ -115,14 +115,26 @@ const Listings: React.FC<ListingsProps> = ({ listings: initialListings, onSelect
                             </div>
                         </div>
 
-                        <div className="pt-6 border-t border-slate-800 mt-auto">
-                            <Button 
-                                onClick={() => onSelectForMarketing(previewListing)} 
-                                className="w-full py-4 text-base shadow-lg shadow-emerald-500/20 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500"
-                            >
-                                Open Marketing Studio
-                            </Button>
-                            <p className="text-center text-xs text-slate-500 mt-3">Create content, videos, and ads for this property instantly.</p>
+                        {/* Actions Section */}
+                        <div className="bg-slate-900/80 rounded-2xl p-5 border border-slate-700/60 backdrop-blur-sm">
+                            <h3 className="font-bold text-white mb-3 text-sm uppercase tracking-wider text-slate-400">Quick Actions</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <Button 
+                                    onClick={() => onSelectForMarketing(previewListing)}
+                                    icon={<SparklesIcon className="w-4 h-4"/>}
+                                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 border-none"
+                                >
+                                    Create Campaign
+                                </Button>
+                                <Button 
+                                    variant="secondary"
+                                    onClick={() => {/* Placeholder for edit */}}
+                                    icon={<ShareIcon className="w-4 h-4"/>}
+                                    className="w-full"
+                                >
+                                    Share Listing
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -161,10 +173,10 @@ const Listings: React.FC<ListingsProps> = ({ listings: initialListings, onSelect
                 {listings.map(listing => (
                     <Card key={listing.id} className="p-0 overflow-hidden flex flex-col group hover:border-emerald-500/50 transition-all duration-300">
                         <div 
-                            className="relative overflow-hidden cursor-pointer"
+                            className="relative overflow-hidden cursor-pointer h-48"
                             onClick={() => handlePreview(listing)}
                         >
-                            <img src={listing.imageUrl} alt={listing.address} className="w-full h-48 object-cover transition-transform duration-700 group-hover:scale-110" />
+                            <img src={listing.imageUrl} alt={listing.address} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                              <div className={`absolute top-3 right-3 text-xs font-bold px-2.5 py-1 rounded-full backdrop-blur-md border border-white/10 ${statusColors[listing.status]}`}>
                                 {listing.status}
                             </div>
@@ -175,8 +187,9 @@ const Listings: React.FC<ListingsProps> = ({ listings: initialListings, onSelect
                                 <span className="bg-white/20 backdrop-blur border border-white/30 text-white px-4 py-2 rounded-full text-sm font-semibold">View Details</span>
                             </div>
                         </div>
+                        
                         <div className="p-5 flex flex-col flex-1">
-                            <div onClick={() => handlePreview(listing)} className="cursor-pointer">
+                            <div onClick={() => handlePreview(listing)} className="cursor-pointer flex-1">
                                 <p className="font-medium text-white truncate text-lg group-hover:text-emerald-400 transition-colors">{listing.address}</p>
                                 <p className="text-2xl font-bold text-emerald-400 my-2">{listing.price}</p>
                                 
@@ -187,23 +200,21 @@ const Listings: React.FC<ListingsProps> = ({ listings: initialListings, onSelect
                                     <span className="text-slate-600">|</span>
                                     <span className="flex items-center gap-1"><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg> {listing.size} sqm</span>
                                 </div>
-
-                                <div className="flex flex-wrap gap-1 mb-4">
-                                    {listing.amenities.slice(0, 3).map((amenity, i) => (
-                                        <span key={i} className="text-[10px] bg-slate-800 text-slate-400 px-2 py-1 rounded-full border border-slate-700">
-                                            {amenity}
-                                        </span>
-                                    ))}
-                                    {listing.amenities.length > 3 && <span className="text-[10px] text-slate-500 px-1 py-1">+{listing.amenities.length - 3} more</span>}
-                                </div>
                             </div>
 
-                             <button 
-                                onClick={() => onSelectForMarketing(listing)}
-                                className="w-full mt-auto bg-slate-800 hover:bg-emerald-600 border border-slate-700 hover:border-emerald-500 text-white font-semibold py-2.5 px-4 rounded-xl transition-all text-sm shadow-sm"
-                             >
-                                Open Marketing Studio
-                            </button>
+                            <div className="mt-2 pt-4 border-t border-slate-800 flex justify-between items-center">
+                                <span className="text-xs text-slate-500 font-mono">ID: {listing.id}</span>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onSelectForMarketing(listing);
+                                    }}
+                                    className="flex items-center gap-2 text-xs font-bold text-emerald-400 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 px-3 py-1.5 rounded-lg transition-all group/btn"
+                                >
+                                    <SparklesIcon className="w-3 h-3 group-hover/btn:animate-pulse" />
+                                    Promote
+                                </button>
+                            </div>
                         </div>
                     </Card>
                 ))}
