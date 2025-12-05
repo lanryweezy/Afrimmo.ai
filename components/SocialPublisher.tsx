@@ -1,10 +1,12 @@
 
+
 import React, { useState, useEffect } from 'react';
 import Card from './Card';
 import Button from './Button';
 import { getPostSuggestions } from '../services/geminiService';
 import { Platform, SocialAccount, ScheduledPost } from '../types';
 import { SparklesIcon, SocialPublisherIcon, InstagramIcon, FacebookIcon, ThreadsIcon, CheckIcon, CalendarDaysIcon, ArrowLeftIcon, DotsHorizontalIcon } from './IconComponents';
+import InstagramFeed from './InstagramFeed';
 
 interface SocialPublisherProps {
     initialContent: string | null;
@@ -34,6 +36,9 @@ const SocialPublisher: React.FC<SocialPublisherProps> = ({ initialContent, clear
     // Calendar View State
     const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
     const [currentCalendarDate, setCurrentCalendarDate] = useState(new Date());
+
+    // Tab State for Bottom Section
+    const [activeFeedTab, setActiveFeedTab] = useState<'scheduled' | 'instagram'>('scheduled');
     
     useEffect(() => {
         if (initialContent) {
@@ -221,6 +226,9 @@ const SocialPublisher: React.FC<SocialPublisherProps> = ({ initialContent, clear
             </div>
         );
     };
+    
+    // Get Instagram Account for feed
+    const instagramAccount = accounts.find(a => a.platform === Platform.Instagram);
 
     return (
         <div className="space-y-6">
@@ -322,55 +330,84 @@ const SocialPublisher: React.FC<SocialPublisherProps> = ({ initialContent, clear
                 </div>
             </Card>
 
-            <Card>
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-semibold text-white">Scheduled Posts</h2>
-                    <div className="flex bg-slate-900 p-1 rounded-lg border border-slate-800">
-                        <button 
-                            onClick={() => setViewMode('list')}
-                            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${viewMode === 'list' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}
-                        >
-                            <DotsHorizontalIcon className="w-3 h-3"/> List
-                        </button>
-                        <button 
-                            onClick={() => setViewMode('calendar')}
-                            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${viewMode === 'calendar' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}
-                        >
-                            <CalendarDaysIcon className="w-3 h-3"/> Calendar
-                        </button>
-                    </div>
+            <Card className="p-0 overflow-hidden bg-slate-900/50">
+                <div className="flex border-b border-slate-700 bg-slate-900">
+                    <button 
+                        onClick={() => setActiveFeedTab('scheduled')}
+                        className={`flex-1 py-4 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${activeFeedTab === 'scheduled' ? 'text-teal-400 border-b-2 border-teal-500 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}
+                    >
+                        <CalendarDaysIcon className="w-4 h-4" /> Content Calendar
+                    </button>
+                    <button 
+                        onClick={() => setActiveFeedTab('instagram')}
+                        className={`flex-1 py-4 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${activeFeedTab === 'instagram' ? 'text-teal-400 border-b-2 border-teal-500 bg-slate-800/50' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}
+                    >
+                        <InstagramIcon className="w-4 h-4" /> Live Instagram Feed
+                    </button>
                 </div>
 
-                {viewMode === 'list' ? (
-                    <div className="space-y-3">
-                        {posts.length > 0 ? posts.map(post => (
-                            <div key={post.id} className="bg-gray-900/50 p-4 rounded-lg border border-gray-700/50 animate-fade-in">
-                                <div className="flex justify-between items-start">
-                                    <div className="flex items-center gap-2">
-                                        <div className={`p-1.5 rounded-full ${
-                                            post.platform === Platform.Instagram ? 'bg-gradient-to-br from-yellow-400 via-red-500 to-purple-600' :
-                                            post.platform === Platform.Facebook ? 'bg-blue-600' : 'bg-gray-700'
-                                        }`}>
-                                            {getPlatformIcon(post.platform)}
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-white text-sm">{post.platform}</p>
-                                            <p className="text-xs text-gray-400">{post.scheduledAt.toLocaleString()}</p>
-                                        </div>
-                                    </div>
-                                    <span className="text-xs bg-yellow-500/10 text-yellow-300 border border-yellow-500/30 font-medium px-2 py-1 rounded-full">{post.status}</span>
+                <div className="p-6">
+                    {activeFeedTab === 'scheduled' && (
+                        <>
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-semibold text-white">Scheduled Posts</h2>
+                                <div className="flex bg-slate-900 p-1 rounded-lg border border-slate-800">
+                                    <button 
+                                        onClick={() => setViewMode('list')}
+                                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${viewMode === 'list' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}
+                                    >
+                                        <DotsHorizontalIcon className="w-3 h-3"/> List
+                                    </button>
+                                    <button 
+                                        onClick={() => setViewMode('calendar')}
+                                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${viewMode === 'calendar' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}
+                                    >
+                                        <CalendarDaysIcon className="w-3 h-3"/> Calendar
+                                    </button>
                                 </div>
-                                <p className="text-sm text-gray-300 mt-3 line-clamp-2 pl-9">{post.content}</p>
                             </div>
-                        )) : (
-                            <div className="text-center py-8 border-2 border-dashed border-gray-700 rounded-lg">
-                                <p className="text-gray-500">No posts scheduled yet.</p>
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    renderCalendar()
-                )}
+
+                            {viewMode === 'list' ? (
+                                <div className="space-y-3">
+                                    {posts.length > 0 ? posts.map(post => (
+                                        <div key={post.id} className="bg-gray-900/50 p-4 rounded-lg border border-gray-700/50 animate-fade-in">
+                                            <div className="flex justify-between items-start">
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`p-1.5 rounded-full ${
+                                                        post.platform === Platform.Instagram ? 'bg-gradient-to-br from-yellow-400 via-red-500 to-purple-600' :
+                                                        post.platform === Platform.Facebook ? 'bg-blue-600' : 'bg-gray-700'
+                                                    }`}>
+                                                        {getPlatformIcon(post.platform)}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-white text-sm">{post.platform}</p>
+                                                        <p className="text-xs text-gray-400">{post.scheduledAt.toLocaleString()}</p>
+                                                    </div>
+                                                </div>
+                                                <span className="text-xs bg-yellow-500/10 text-yellow-300 border border-yellow-500/30 font-medium px-2 py-1 rounded-full">{post.status}</span>
+                                            </div>
+                                            <p className="text-sm text-gray-300 mt-3 line-clamp-2 pl-9">{post.content}</p>
+                                        </div>
+                                    )) : (
+                                        <div className="text-center py-8 border-2 border-dashed border-gray-700 rounded-lg">
+                                            <p className="text-gray-500">No posts scheduled yet.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                renderCalendar()
+                            )}
+                        </>
+                    )}
+
+                    {activeFeedTab === 'instagram' && (
+                        <InstagramFeed 
+                            handle={instagramAccount?.handle || ''} 
+                            connected={instagramAccount?.connected || false}
+                            onConnect={() => handleToggleConnection(instagramAccount!)} 
+                        />
+                    )}
+                </div>
             </Card>
         </div>
     );

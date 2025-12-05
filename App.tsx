@@ -9,7 +9,8 @@ import Listings from './components/Listings';
 import Marketing from './components/Marketing';
 import Tools from './components/Tools';
 import Settings from './components/Settings';
-import { Page, Lead, Listing, LeadStatus } from './types';
+import LandingPage from './components/LandingPage';
+import { Page, Lead, Listing, LeadStatus, AgentGoals } from './types';
 import { scoreLead } from './services/geminiService';
 import Sidebar from './components/Sidebar';
 
@@ -81,34 +82,44 @@ const mockListingsData: Listing[] = [
 ];
 
 const App: React.FC = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentPage, setCurrentPage] = useState<Page>('today');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [listings, setListings] = useState<Listing[]>(mockListingsData);
   const [isLoadingLeads, setIsLoadingLeads] = useState(true);
   const [selectedListingForMarketing, setSelectedListingForMarketing] = useState<Listing | null>(null);
+  
+  // Goals State
+  const [agentGoals, setAgentGoals] = useState<AgentGoals>({
+      monthlyRevenueTarget: 100000000, // 100 Million
+      dealsTarget: 3
+  });
 
   useEffect(() => {
-    const fetchScores = async () => {
-        setIsLoadingLeads(true);
-        try {
-            const scoredLeadsPromises = mockLeadsData.map(async (leadData) => {
-                const leadForScoring = { ...leadData, history: leadData.history || [], notes: leadData.notes || '', conversation: leadData.conversation || [] };
-                const scoreData = await scoreLead(leadForScoring);
-                return { ...leadForScoring, ...scoreData };
-            });
-            const scoredLeads = await Promise.all(scoredLeadsPromises);
-            setLeads(scoredLeads.sort((a, b) => (b.score || 0) - (a.score || 0)));
-        } catch (error) {
-            console.error("Failed to score leads:", error);
-            // Fallback to unscored leads if AI fails
-            const unscoredLeads = mockLeadsData.map(l => ({...l, history: l.history || [], notes: l.notes || '', conversation: l.conversation || []}));
-            setLeads(unscoredLeads);
-        } finally {
-            setIsLoadingLeads(false);
-        }
-    };
-    fetchScores();
-  }, []);
+    // Only fetch scores if we are logged in to save API calls
+    if (isLoggedIn) {
+        const fetchScores = async () => {
+            setIsLoadingLeads(true);
+            try {
+                const scoredLeadsPromises = mockLeadsData.map(async (leadData) => {
+                    const leadForScoring = { ...leadData, history: leadData.history || [], notes: leadData.notes || '', conversation: leadData.conversation || [] };
+                    const scoreData = await scoreLead(leadForScoring);
+                    return { ...leadForScoring, ...scoreData };
+                });
+                const scoredLeads = await Promise.all(scoredLeadsPromises);
+                setLeads(scoredLeads.sort((a, b) => (b.score || 0) - (a.score || 0)));
+            } catch (error) {
+                console.error("Failed to score leads:", error);
+                // Fallback to unscored leads if AI fails
+                const unscoredLeads = mockLeadsData.map(l => ({...l, history: l.history || [], notes: l.notes || '', conversation: l.conversation || []}));
+                setLeads(unscoredLeads);
+            } finally {
+                setIsLoadingLeads(false);
+            }
+        };
+        fetchScores();
+    }
+  }, [isLoggedIn]);
 
   const handleSelectListingForMarketing = (listing: Listing) => {
     setSelectedListingForMarketing(listing);
@@ -122,7 +133,7 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (currentPage) {
       case 'today':
-        return <Today setActivePage={setCurrentPage} leads={leads} listings={listings} />;
+        return <Today setActivePage={setCurrentPage} leads={leads} listings={listings} goals={agentGoals} />;
       case 'leads':
         return <Leads leads={leads} setLeads={setLeads} isLoading={isLoadingLeads} />;
       case 'listings':
@@ -132,11 +143,15 @@ const App: React.FC = () => {
       case 'tools':
         return <Tools />;
       case 'settings':
-        return <Settings />;
+        return <Settings goals={agentGoals} onUpdateGoals={setAgentGoals} />;
       default:
-        return <Today setActivePage={setCurrentPage} leads={leads} listings={listings} />;
+        return <Today setActivePage={setCurrentPage} leads={leads} listings={listings} goals={agentGoals} />;
     }
   };
+
+  if (!isLoggedIn) {
+      return <LandingPage onLogin={() => setIsLoggedIn(true)} />;
+  }
 
   return (
     <div className="md:flex h-screen bg-gray-900 text-gray-100 font-sans">

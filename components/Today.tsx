@@ -1,14 +1,16 @@
 
+
 import React, { useState } from 'react';
 import Card from './Card';
 import Button from './Button';
-import { Page, Lead, Listing } from '../types';
-import { ListingsIcon, LeadsIcon, PropertyValuatorIcon, WhatsAppIcon, SendIcon, PlusIcon, TrashIcon, CheckIcon, BellIcon } from './IconComponents';
+import { Page, Lead, Listing, AgentGoals } from '../types';
+import { ListingsIcon, LeadsIcon, PropertyValuatorIcon, WhatsAppIcon, SendIcon, PlusIcon, TrashIcon, CheckIcon, BellIcon, TargetIcon, MoneyIcon } from './IconComponents';
 
 interface TodayProps {
     setActivePage: (page: Page) => void;
     leads: Lead[];
     listings: Listing[];
+    goals?: AgentGoals;
 }
 
 interface Task {
@@ -35,11 +37,53 @@ const StatCard: React.FC<{ title: string; value: string; subtext?: string; icon:
     </div>
 );
 
-const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings }) => {
+const CircularProgress: React.FC<{ percentage: number, label: string, value: string, subLabel: string, color: string }> = ({ percentage, label, value, subLabel, color }) => {
+    const radius = 35;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDashoffset = circumference - (percentage / 100) * circumference;
+    
+    return (
+        <div className="flex flex-col items-center justify-center p-4 bg-slate-900/40 rounded-xl border border-slate-800">
+             <div className="relative w-24 h-24 mb-3">
+                 {/* Background Circle */}
+                 <svg className="w-full h-full transform -rotate-90">
+                     <circle cx="50%" cy="50%" r={radius} stroke="currentColor" strokeWidth="6" fill="transparent" className="text-slate-800" />
+                     <circle 
+                        cx="50%" cy="50%" r={radius} 
+                        stroke="currentColor" strokeWidth="6" fill="transparent" 
+                        strokeDasharray={circumference} 
+                        strokeDashoffset={strokeDashoffset} 
+                        strokeLinecap="round"
+                        className={`${color} transition-all duration-1000 ease-out`}
+                     />
+                 </svg>
+                 <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-white">
+                     {percentage}%
+                 </div>
+             </div>
+             <p className="text-xs text-slate-400 uppercase font-bold tracking-wide mb-1">{label}</p>
+             <p className="text-white font-bold">{value}</p>
+             <p className="text-[10px] text-slate-500">{subLabel}</p>
+        </div>
+    );
+}
+
+const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings, goals }) => {
   const activeListingsCount = listings.filter(l => l.status === 'Available').length;
   const newLeadsCount = leads.filter(l => l.status === 'New').length;
   const hotLeadsCount = leads.filter(l => l.temperature === 'Hot').length;
   const newLeadsToContact = leads.filter(l => l.status === 'New').slice(0, 3);
+  
+  // Calculate mock revenue based on leads with 'Closed' status or 'Offer'
+  // In a real app, this would come from a transaction log.
+  // Mocking 40% progress for demo
+  const revenueTarget = goals?.monthlyRevenueTarget || 50000000;
+  const currentRevenue = Math.floor(revenueTarget * 0.42); 
+  const dealsTarget = goals?.dealsTarget || 5;
+  const closedDeals = leads.filter(l => l.status === 'Closed').length + 1; // +1 for mock
+
+  const revenuePercentage = Math.min(100, Math.round((currentRevenue / revenueTarget) * 100));
+  const dealsPercentage = Math.min(100, Math.round((closedDeals / dealsTarget) * 100));
 
   // Task State
   const [tasks, setTasks] = useState<Task[]>([
@@ -140,7 +184,7 @@ const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings }) => {
             title="Pipeline Value" 
             value="₦1.2B" 
             subtext="Potential Commission: ₦60M"
-            icon={<PropertyValuatorIcon className="w-5 h-5" />} 
+            icon={<MoneyIcon className="w-5 h-5" />} 
             color="text-amber-400"
         />
         <StatCard 
@@ -154,8 +198,35 @@ const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
         
-        {/* Task Management */}
+        {/* Left Column: Tasks & Goals */}
         <div className="lg:col-span-2 space-y-6">
+             
+             {/* Goal Tracker */}
+             <Card className="bg-gradient-to-br from-slate-900 to-slate-900 border-slate-800">
+                <div className="flex justify-between items-center mb-6">
+                     <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                        <TargetIcon className="w-5 h-5 text-emerald-400"/> Monthly Targets
+                     </h2>
+                     <button onClick={() => setActivePage('settings')} className="text-xs text-slate-400 hover:text-white transition-colors">Edit Goals</button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <CircularProgress 
+                        percentage={revenuePercentage} 
+                        label="Revenue Goal" 
+                        value={`₦${(currentRevenue / 1000000).toFixed(1)}M`} 
+                        subLabel={`Target: ₦${(revenueTarget / 1000000).toFixed(0)}M`}
+                        color="text-emerald-500" 
+                    />
+                    <CircularProgress 
+                        percentage={dealsPercentage} 
+                        label="Deals Closed" 
+                        value={`${closedDeals} Closed`} 
+                        subLabel={`Target: ${dealsTarget}`}
+                        color="text-blue-500" 
+                    />
+                </div>
+             </Card>
+
              <Card>
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-bold text-white">Daily Tasks</h2>
@@ -226,7 +297,7 @@ const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings }) => {
             </Card>
         </div>
 
-        {/* Urgent Leads Column */}
+        {/* Right Column: Urgent Leads */}
         <div className="space-y-6">
              <Card className="h-full">
                 <h2 className="text-lg font-bold text-white mb-4 flex items-center">

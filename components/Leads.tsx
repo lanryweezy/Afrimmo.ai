@@ -6,6 +6,7 @@ import { Lead, LeadStatus, ChatMessage, LeadInteraction } from '../types';
 import { FireIcon, SparklesIcon, HistoryIcon, NoteIcon, LeadsIcon, ChatBubbleLeftRightIcon, WhatsAppIcon, CheckIcon, DocumentTextIcon } from './IconComponents';
 import WhatsAppChat from './WhatsAppChat';
 import DealDocs from './DealDocs';
+import { scoreLead } from '../services/geminiService';
 
 type DetailTab = 'details' | 'chat' | 'docs';
 
@@ -53,7 +54,7 @@ const AddLeadForm: React.FC<{ onAdd: (data: any) => void, onCancel: () => void }
                     <option value="Instagram">Instagram DM</option>
                 </select>
                 <textarea
-                    placeholder="Initial requirements (e.g. 3 Bed in Ikoyi)"
+                    placeholder="Initial requirements (e.g. 3 Bed in Ikoyi, Budget ₦100M)"
                     rows={2}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
@@ -61,7 +62,7 @@ const AddLeadForm: React.FC<{ onAdd: (data: any) => void, onCancel: () => void }
                 />
                 <div className="flex justify-end gap-2 pt-1">
                     <Button type="button" onClick={onCancel} variant="secondary" size="small" className="bg-transparent border border-slate-700">Cancel</Button>
-                    <Button type="submit" size="small">Create Profile</Button>
+                    <Button type="submit" size="small">Create & Score</Button>
                 </div>
             </form>
         </div>
@@ -170,23 +171,44 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
         });
     };
 
-    const handleAddNewLead = (newLeadData: { name: string, source: 'WhatsApp' | 'Instagram' | 'Manual', notes: string }) => {
+    const handleAddNewLead = async (newLeadData: { name: string, source: 'WhatsApp' | 'Instagram' | 'Manual', notes: string }) => {
+        const tempId = `lead-${Date.now()}`;
         const newLead: Lead = {
-            id: `lead-${Date.now()}`,
+            id: tempId,
             ...newLeadData,
             status: 'New',
             history: [{ id: 'h-new', date: 'Just now', description: 'Lead created manually.' }],
-            score: 50,
-            temperature: 'Warm',
-            justification: 'Newly added manual lead.',
-            nextAction: 'Make initial contact to qualify the lead.',
+            score: 0,
+            temperature: 'Cold',
+            justification: 'AI Scoring in progress...',
+            nextAction: 'Pending analysis...',
         };
+        
+        // Optimistic update
         setLeads(prevLeads => [newLead, ...prevLeads]);
         setShowAddLeadForm(false);
         handleSelectLead(newLead);
+
+        try {
+            // Real-time AI scoring
+            const scoreData = await scoreLead(newLead);
+            
+            setLeads(prevLeads => prevLeads.map(l => 
+                l.id === tempId ? { ...l, ...scoreData } : l
+            ));
+            
+            // Update selected view if still on this lead
+            setSelectedLead(prev => 
+                prev && prev.id === tempId ? { ...prev, ...scoreData } : prev
+            );
+        } catch (error) {
+            console.error("Scoring failed", error);
+        }
     };
 
-    const filteredLeads = filter === 'All' ? leads : leads.filter(l => l.temperature === 'Hot');
+    // Filter and Sort leads
+    const filteredLeads = (filter === 'All' ? leads : leads.filter(l => l.temperature === 'Hot'))
+        .sort((a, b) => (b.score || 0) - (a.score || 0));
 
     return (
         <div className="space-y-6 max-w-[1600px] mx-auto animate-fade-in h-[calc(100vh-140px)] md:h-[calc(100vh-100px)] flex flex-col">
@@ -232,11 +254,14 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
                                                 <p className="text-[10px] text-slate-500 truncate">{lead.history[0]?.date}</p>
                                             </div>
                                         </div>
-                                        {lead.score && (
-                                            <div className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${lead.score > 75 ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : lead.score > 40 ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
-                                                {lead.score}
-                                            </div>
-                                        )}
+                                        <div className="flex items-center gap-1">
+                                             {lead.temperature === 'Hot' && <FireIcon className="w-3 h-3 text-rose-500" />}
+                                             {lead.score !== undefined && (
+                                                <div className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${lead.score > 75 ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : lead.score > 40 ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
+                                                    {lead.score}
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                     
                                     <div className="pl-12">
@@ -268,7 +293,10 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
                                     </button>
                                     <img src={`https://i.pravatar.cc/150?u=${selectedLead.id}`} className="w-10 h-10 rounded-full border border-slate-700" alt="" />
                                     <div>
-                                        <h2 className="text-base font-bold text-white">{selectedLead.name}</h2>
+                                        <h2 className="text-base font-bold text-white flex items-center gap-2">
+                                            {selectedLead.name}
+                                            {selectedLead.temperature === 'Hot' && <span className="bg-rose-500/20 text-rose-400 text-[10px] px-1.5 py-0.5 rounded-full border border-rose-500/30 flex items-center"><FireIcon className="w-3 h-3 mr-0.5"/> HOT</span>}
+                                        </h2>
                                         <div className="flex items-center gap-2">
                                             <span className={`text-[10px] px-1.5 py-0.5 rounded border ${statusConfig[selectedLead.status].color}`}>{statusConfig[selectedLead.status].label}</span>
                                             <span className="text-[10px] text-slate-500">via {selectedLead.source}</span>
@@ -313,8 +341,8 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
                                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                             {/* AI Insight Card */}
                                             <div className="lg:col-span-2">
-                                                <div className="bg-gradient-to-br from-emerald-900/20 to-slate-900 border border-emerald-500/20 rounded-xl p-5 mb-6">
-                                                    <h3 className="text-sm font-bold text-emerald-400 mb-2 flex items-center uppercase tracking-wider"><SparklesIcon className="w-4 h-4 mr-2"/> AI Lead Analysis</h3>
+                                                <div className="bg-gradient-to-br from-emerald-900/20 to-slate-900 border border-emerald-500/20 rounded-xl p-5 mb-6 shadow-lg shadow-emerald-900/10">
+                                                    <h3 className="text-sm font-bold text-emerald-400 mb-3 flex items-center uppercase tracking-wider"><SparklesIcon className="w-4 h-4 mr-2"/> AI Lead Analysis</h3>
                                                     <p className="text-slate-300 text-sm leading-relaxed mb-4">{selectedLead.justification || "Insufficient data for analysis."}</p>
                                                     <div className="bg-slate-950/50 p-3 rounded-lg border border-emerald-500/10 flex items-start gap-3">
                                                         <div className="mt-0.5 text-emerald-500"><CheckIcon className="w-4 h-4"/></div>

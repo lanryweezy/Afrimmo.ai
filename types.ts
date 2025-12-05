@@ -73,7 +73,6 @@ export interface SocialBundle {
   whatsappMessage: string;
   youtubeTitle: string;
   youtubeDescription: string;
-  hashtags: string[];
 }
 
 // New agent-centric types
@@ -141,4 +140,10 @@ export interface AdCampaign {
     spend?: number;
     targetIncome?: TargetIncome;
     targetInterests?: string[];
+}
+
+// Goals
+export interface AgentGoals {
+    monthlyRevenueTarget: number;
+    dealsTarget: number;
 }

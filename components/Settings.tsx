@@ -3,20 +3,30 @@
 import React, { useState } from 'react';
 import Card from './Card';
 import Button from './Button';
-import { UserIcon, CreditCardIcon, SettingsIcon, BadgeCheckIcon, CheckIcon, SparklesIcon } from './IconComponents';
+import { UserIcon, CreditCardIcon, SettingsIcon, BadgeCheckIcon, CheckIcon, TargetIcon } from './IconComponents';
+import { AgentGoals } from '../types';
 
-const Settings: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<'profile' | 'billing' | 'integrations'>('profile');
+interface SettingsProps {
+    goals?: AgentGoals;
+    onUpdateGoals?: (goals: AgentGoals) => void;
+}
+
+const Settings: React.FC<SettingsProps> = ({ goals, onUpdateGoals }) => {
+    const [activeTab, setActiveTab] = useState<'profile' | 'billing' | 'integrations' | 'goals'>('profile');
     const [formData, setFormData] = useState({
         fullName: 'Tunde Bakare',
         email: 'tunde@afrimmo.ai',
         agencyName: 'Prestige Homes Lagos',
         phone: '+234 800 123 4567'
     });
+    const [localGoals, setLocalGoals] = useState<AgentGoals>(goals || { monthlyRevenueTarget: 0, dealsTarget: 0 });
     const [isSaving, setIsSaving] = useState(false);
 
     const handleSave = () => {
         setIsSaving(true);
+        if (onUpdateGoals && activeTab === 'goals') {
+            onUpdateGoals(localGoals);
+        }
         setTimeout(() => setIsSaving(false), 1500);
     };
 
@@ -62,6 +72,12 @@ const Settings: React.FC = () => {
                         className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-colors ${activeTab === 'profile' ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}
                     >
                         <UserIcon className="w-5 h-5" /> Profile Details
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('goals')}
+                        className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-colors ${activeTab === 'goals' ? 'bg-slate-800 text-white border border-slate-700' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}
+                    >
+                        <TargetIcon className="w-5 h-5" /> Performance Goals
                     </button>
                     <button 
                         onClick={() => setActiveTab('billing')}
@@ -110,6 +126,57 @@ const Settings: React.FC = () => {
                                 </div>
                                 <div className="pt-4">
                                     <Button onClick={handleSave} isLoading={isSaving}>Save Changes</Button>
+                                </div>
+                            </div>
+                        </Card>
+                    )}
+
+                    {activeTab === 'goals' && (
+                        <Card>
+                             <div className="flex items-center gap-3 mb-6">
+                                <div className="p-2 bg-emerald-500/10 rounded-lg">
+                                    <TargetIcon className="w-6 h-6 text-emerald-400" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-white">Performance Targets</h2>
+                                    <p className="text-slate-400 text-sm">Set your monthly sales goals to track progress on your dashboard.</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6 max-w-lg">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-400 mb-2">Monthly Sales Revenue Target (₦)</label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-3 text-slate-500">₦</span>
+                                        <input 
+                                            type="number" 
+                                            value={localGoals.monthlyRevenueTarget} 
+                                            onChange={e => setLocalGoals({...localGoals, monthlyRevenueTarget: Number(e.target.value)})} 
+                                            className="w-full bg-slate-900 border-slate-700 rounded-lg p-2.5 pl-8 text-white focus:ring-emerald-500 focus:border-emerald-500 text-lg font-bold" 
+                                        />
+                                    </div>
+                                    <p className="text-xs text-slate-500 mt-1">Target commission (5%): ₦{(localGoals.monthlyRevenueTarget * 0.05).toLocaleString()}</p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-400 mb-2">Deals Closed Target</label>
+                                    <input 
+                                        type="number" 
+                                        value={localGoals.dealsTarget} 
+                                        onChange={e => setLocalGoals({...localGoals, dealsTarget: Number(e.target.value)})} 
+                                        className="w-full bg-slate-900 border-slate-700 rounded-lg p-2.5 text-white focus:ring-emerald-500 focus:border-emerald-500" 
+                                    />
+                                </div>
+
+                                <div className="pt-4 bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                                    <h4 className="text-sm font-bold text-white mb-2">Why set goals?</h4>
+                                    <p className="text-xs text-slate-400 leading-relaxed">
+                                        Setting clear targets helps you stay motivated. We'll show you a progress tracker on your daily dashboard so you can see how close you are to hitting your commission goals.
+                                    </p>
+                                </div>
+
+                                <div className="pt-2">
+                                    <Button onClick={handleSave} isLoading={isSaving}>Update Goals</Button>
                                 </div>
                             </div>
                         </Card>
