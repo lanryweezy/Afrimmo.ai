@@ -245,6 +245,38 @@ export const generateListingVideo = async (images: string[], propertyDetails: st
     }
 };
 
+export const generatePropertyImage = async (propertyDetails: string): Promise<string> => {
+    const ai = getAiClient();
+    // Return a placeholder if no AI client
+    if (!ai) {
+        return `https://picsum.photos/seed/${propertyDetails.length}/800/600`;
+    }
+
+    const prompt = `Create a photorealistic, architect-designed image of a modern, luxurious property based on these details: "${propertyDetails}". The scene should be on a bright, sunny day with clear blue skies, highlighting luxury and appeal for a high-end real estate advertisement.`;
+
+    try {
+        const response = await ai.models.generateImages({
+            model: 'imagen-4.0-generate-001',
+            prompt: prompt,
+            config: {
+              numberOfImages: 1,
+              outputMimeType: 'image/jpeg',
+              aspectRatio: '16:9',
+            },
+        });
+        
+        if (response.generatedImages && response.generatedImages.length > 0) {
+            const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
+            return `data:image/jpeg;base64,${base64ImageBytes}`;
+        }
+        throw new Error("No image was generated.");
+
+    } catch(error) {
+        console.error("Error generating property image:", error);
+        // Fallback
+        return `https://picsum.photos/seed/${propertyDetails.length}/800/600`;
+    }
+};
 
 export const generateAdCampaign = async (propertyDetails: string, objective: MarketingObjective, targetIncome: TargetIncome, targetInterests: string[]): Promise<{ metaAd: AdCopy, googleAd: AdCopy }> => {
     const ai = getAiClient();

@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Header from './components/Header';
 import BottomNavBar from './components/BottomNavBar';
-import Today from './components/Today';
-import Leads from './components/Leads';
-import Listings from './components/Listings';
-import Marketing from './components/Marketing';
-import Tools from './components/Tools';
-import Settings from './components/Settings';
 import LandingPage from './components/LandingPage';
 import { Page, Lead, Listing, AgentGoals } from './types';
 import { scoreLead } from './services/geminiService';
 import Sidebar from './components/Sidebar';
+import Spinner from './components/Spinner';
+
+// Lazy load heavy components to improve startup performance
+const Today = React.lazy(() => import('./components/Today'));
+const Leads = React.lazy(() => import('./components/Leads'));
+const Listings = React.lazy(() => import('./components/Listings'));
+const Marketing = React.lazy(() => import('./components/Marketing'));
+const Tools = React.lazy(() => import('./components/Tools'));
+const Settings = React.lazy(() => import('./components/Settings'));
 
 const mockLeadsData: Omit<Lead, 'score' | 'temperature' | 'justification' | 'nextAction'>[] = [
     { 
@@ -37,49 +40,12 @@ const mockLeadsData: Omit<Lead, 'score' | 'temperature' | 'justification' | 'nex
 ];
 
 const mockListingsData: Listing[] = [
-    { 
-        id: '1', 
-        address: '12 Banana Island Rd, Ikoyi, Lagos', 
-        price: '₦850,000,000', 
-        status: 'Available', 
-        imageUrl: 'https://picsum.photos/seed/house1/400/300', 
-        images: ['https://picsum.photos/seed/house1/800/600', 'https://picsum.photos/seed/house1-2/800/600', 'https://picsum.photos/seed/house1-3/800/600'],
-        beds: 5, baths: 6, size: 700, 
-        amenities: ['Swimming Pool', 'Cinema', 'Gym', 'Automation'] 
-    },
-    { 
-        id: '2', 
-        address: '8A Admiralty Way, Lekki Phase 1, Lagos', 
-        price: '₦450,000,000', 
-        status: 'Under Offer', 
-        imageUrl: 'https://picsum.photos/seed/house2/400/300', 
-        images: ['https://picsum.photos/seed/house2/800/600', 'https://picsum.photos/seed/house2-2/800/600', 'https://picsum.photos/seed/house2-3/800/600'],
-        beds: 4, baths: 5, size: 550, 
-        amenities: ['Boys Quarter', 'Fitted Kitchen', 'Pool'] 
-    },
-    { 
-        id: '3', 
-        address: '25 Opebi Rd, Ikeja, Lagos', 
-        price: '₦180,000,000', 
-        status: 'Available', 
-        imageUrl: 'https://picsum.photos/seed/house3/400/300', 
-        images: ['https://picsum.photos/seed/house3/800/600', 'https://picsum.photos/seed/house3-2/800/600'],
-        beds: 4, baths: 4, size: 480, 
-        amenities: ['Security', 'Parking', 'Water Treatment'] 
-    },
-    { 
-        id: '4', 
-        address: 'Estate 5, VGC, Lagos', 
-        price: '₦320,000,000', 
-        status: 'Sold', 
-        imageUrl: 'https://picsum.photos/seed/house4/400/300', 
-        images: ['https://picsum.photos/seed/house4/800/600', 'https://picsum.photos/seed/house4-2/800/600', 'https://picsum.photos/seed/house4-3/800/600'],
-        beds: 5, baths: 5, size: 600, 
-        amenities: ['Garden', 'Playground', 'Solar Power'] 
-    },
+    { id: '1', address: '12 Banana Island Rd, Ikoyi, Lagos', price: '₦850,000,000', status: 'Available', imageUrl: 'https://picsum.photos/seed/house1/400/300', images: ['https://picsum.photos/seed/house1/800/600', 'https://picsum.photos/seed/house1-2/800/600'], beds: 5, baths: 6, size: 700, amenities: ['Pool', 'Gym'] },
+    { id: '2', address: '8A Admiralty Way, Lekki Phase 1, Lagos', price: '₦450,000,000', status: 'Under Offer', imageUrl: 'https://picsum.photos/seed/house2/400/300', images: ['https://picsum.photos/seed/house2/800/600'], beds: 4, baths: 5, size: 550, amenities: ['Security', 'Boys Quarter'] },
+    { id: '3', address: '25 Opebi Rd, Ikeja, Lagos', price: '₦180,000,000', status: 'Available', imageUrl: 'https://picsum.photos/seed/house3/400/300', images: ['https://picsum.photos/seed/house3/800/600'], beds: 4, baths: 4, size: 480, amenities: ['Parking'] },
+    { id: '4', address: 'Estate 5, VGC, Lagos', price: '₦320,000,000', status: 'Sold', imageUrl: 'https://picsum.photos/seed/house4/400/300', images: ['https://picsum.photos/seed/house4/800/600'], beds: 5, baths: 5, size: 600, amenities: ['Garden'] },
 ];
 
-// Initialize with valid default values to prevent crash if AI fails
 const initialLeads: Lead[] = mockLeadsData.map(l => ({
     ...l,
     score: 50,
@@ -94,29 +60,25 @@ const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('today');
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
   const [listings, setListings] = useState<Listing[]>(mockListingsData);
-  const [isLoadingLeads, setIsLoadingLeads] = useState(false); // Changed default to false to show UI immediately
+  const [isLoadingLeads, setIsLoadingLeads] = useState(false);
   const [selectedListingForMarketing, setSelectedListingForMarketing] = useState<Listing | null>(null);
   
-  // Goals State
   const [agentGoals, setAgentGoals] = useState<AgentGoals>({
-      monthlyRevenueTarget: 100000000, // 100 Million
+      monthlyRevenueTarget: 100000000, 
       dealsTarget: 3
   });
 
   useEffect(() => {
-    // Only fetch scores if we are logged in to save API calls
     if (isLoggedIn) {
         const fetchScores = async () => {
             setIsLoadingLeads(true);
             try {
-                // Fetch scores progressively so we can update state without blocking
                 const scoredLeadsPromises = mockLeadsData.map(async (leadData) => {
                     const leadForScoring = { ...leadData, history: leadData.history || [], notes: leadData.notes || '', conversation: leadData.conversation || [] };
                     try {
                         const scoreData = await scoreLead(leadForScoring);
                         return { ...leadForScoring, ...scoreData };
                     } catch (e) {
-                        // Fallback for individual lead failure
                         return { ...leadForScoring, score: 50, temperature: 'Warm', justification: 'AI scoring unavailable', nextAction: 'Check connection' } as Lead;
                     }
                 });
@@ -125,8 +87,6 @@ const App: React.FC = () => {
                 setLeads(scoredLeads.sort((a, b) => (b.score || 0) - (a.score || 0)));
             } catch (error) {
                 console.error("Failed to score leads:", error);
-                // We already have initial leads, so we don't need to do anything drastic here.
-                // Just keep the defaults.
             } finally {
                 setIsLoadingLeads(false);
             }
@@ -145,22 +105,33 @@ const App: React.FC = () => {
   };
 
   const renderContent = () => {
-    switch (currentPage) {
-      case 'today':
-        return <Today setActivePage={setCurrentPage} leads={leads} listings={listings} goals={agentGoals} />;
-      case 'leads':
-        return <Leads leads={leads} setLeads={setLeads} isLoading={isLoadingLeads} />;
-      case 'listings':
-        return <Listings listings={listings} onSelectForMarketing={handleSelectListingForMarketing} />;
-      case 'marketing':
-        return <Marketing selectedListing={selectedListingForMarketing} clearSelectedListing={clearSelectedListingForMarketing} />;
-      case 'tools':
-        return <Tools />;
-      case 'settings':
-        return <Settings goals={agentGoals} onUpdateGoals={setAgentGoals} />;
-      default:
-        return <Today setActivePage={setCurrentPage} leads={leads} listings={listings} goals={agentGoals} />;
-    }
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col items-center justify-center h-full text-slate-500 animate-fade-in">
+                <Spinner />
+                <p className="mt-4 text-sm animate-pulse">Loading workspace...</p>
+            </div>
+        }>
+            {(() => {
+                switch (currentPage) {
+                    case 'today':
+                        return <Today setActivePage={setCurrentPage} leads={leads} listings={listings} goals={agentGoals} />;
+                    case 'leads':
+                        return <Leads leads={leads} setLeads={setLeads} isLoading={isLoadingLeads} />;
+                    case 'listings':
+                        return <Listings listings={listings} onSelectForMarketing={handleSelectListingForMarketing} />;
+                    case 'marketing':
+                        return <Marketing selectedListing={selectedListingForMarketing} clearSelectedListing={clearSelectedListingForMarketing} />;
+                    case 'tools':
+                        return <Tools />;
+                    case 'settings':
+                        return <Settings goals={agentGoals} onUpdateGoals={setAgentGoals} />;
+                    default:
+                        return <Today setActivePage={setCurrentPage} leads={leads} listings={listings} goals={agentGoals} />;
+                }
+            })()}
+        </Suspense>
+    );
   };
 
   if (!isLoggedIn) {
