@@ -1,7 +1,19 @@
 import { GoogleGenAI, Type, FunctionDeclaration, VideoGenerationReferenceType, VideoGenerationReferenceImage } from "@google/genai";
 import { ContentType, PropertyDetailsForValuation, ValuationResponse, Platform, MarketingObjective, AudiencePersona, AdCopy, Lead, SocialBundle, TargetIncome } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Helper to safely get the AI client
+const getAiClient = () => {
+  try {
+    if (process.env.API_KEY) {
+      return new GoogleGenAI({ apiKey: process.env.API_KEY });
+    }
+    console.warn("API Key is missing. Running in Mock/Demo mode.");
+    return null;
+  } catch (error) {
+    console.error("Failed to initialize GoogleGenAI:", error);
+    return null;
+  }
+};
 
 const scheduleViewingFunctionDeclaration: FunctionDeclaration = {
   name: 'scheduleViewing',
@@ -23,6 +35,16 @@ export const generateMarketingContent = async (
   objective: MarketingObjective,
   tone: string
 ): Promise<string[]> => {
+  const ai = getAiClient();
+  if (!ai) {
+    // Mock Data for Demo Mode
+    return [
+      `🏡 *Just Listed!* Exquisite property alert! ${propertyDetails.substring(0, 50)}... This gem won't last long. DM for viewing! #LagosRealEstate #DreamHome`,
+      `✨ Elevate your lifestyle with this stunning new listing. Perfect for ${audience}. Features include modern finishing and serene environment. Contact us today!`,
+      `🔥 Hot Deal! Looking for value? Check out this ${propertyDetails.split(',')[0] || 'property'}. Ideal for investment or family living. 📞 Call now!`
+    ];
+  }
+
   const prompt = `
     You are an expert real estate marketing AI assistant for agents in Africa. 
     Your task is to generate 3 distinct and engaging marketing content pieces.
@@ -39,7 +61,7 @@ export const generateMarketingContent = async (
     - For ${ContentType.Listing}, create a compelling and professional property description for a real estate portal. Use bullet points for key features.
     - Tailor the language, references, and call-to-action to the specified audience and objective in an African context.
     - Ensure each of the 3 generated pieces is unique.
-    - Output the result as a JSON array of strings. For example: ["content 1", "content 2", "content 3"]
+    - Output the result as a JSON array of strings.
   `;
 
   try {
@@ -56,27 +78,31 @@ export const generateMarketingContent = async (
     });
     
     const text = response.text;
-    if (!text) {
-        throw new Error("Received empty response from AI.");
-    }
-    const parsed = JSON.parse(text.trim());
-    if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
-      return parsed;
-    }
-    throw new Error("Invalid response format from AI.");
+    if (!text) throw new Error("Empty response");
+    return JSON.parse(text.trim());
 
   } catch (error) {
     console.error("Error generating marketing content:", error);
-    // Fallback content to ensure app doesn't crash
     return [
-        `Discover this amazing property: ${propertyDetails.substring(0, 50)}... Contact us for more!`,
-        `New Listing Alert! ${propertyDetails.substring(0, 50)}... Perfect for ${audience}.`,
-        `Don't miss out on this opportunity. ${propertyDetails.substring(0, 50)}... DM for details.`
+      "Could not generate content right now. Please check your connection.",
+      "Draft: Beautiful property available for sale. Contact for details.",
+      "Draft: New listing alert! Don't miss this opportunity."
     ];
   }
 };
 
 export const generateSocialBundle = async (propertyDetails: string, price: string): Promise<SocialBundle> => {
+    const ai = getAiClient();
+    if (!ai) {
+        return {
+            instagramCaption: `✨ NEW LISTING ALERT ✨\n\nDiscover luxury living at its finest! 🏠\n\n${propertyDetails}\n\n💰 Price: ${price}\n\n📍 Great Location\n🔑 Secure Title\n\nDM for private viewing! 📩\n\n#RealEstate #DreamHome #ForSale #AfricaRealEstate`,
+            whatsappMessage: `Hello! 👋 Just listed a fantastic property that fits your criteria. \n\n${propertyDetails} going for ${price}. \n\nLet me know if you want to see the video tour!`,
+            youtubeTitle: `INSIDE a ${price} Luxury Home! 😱 MUST SEE!`,
+            youtubeDescription: `Join us for a tour of this amazing property featuring ${propertyDetails}. Located in a prime area. Contact us for inquiries.`,
+            hashtags: ['#RealEstate', '#LagosHomes', '#Investment', '#Luxury', '#Property']
+        };
+    }
+
     const prompt = `
     You are an elite social media manager for a luxury real estate agency in Nigeria.
     A new property has just been listed. Generate a "Viral Launch Bundle" containing optimized text for Instagram, WhatsApp Status, and YouTube Shorts.
@@ -118,40 +144,49 @@ export const generateSocialBundle = async (propertyDetails: string, price: strin
     } catch (error) {
         console.error("Error generating social bundle:", error);
         return {
-            instagramCaption: `Check out this stunning property! ${price}. DM for details.`,
-            whatsappMessage: `New Listing Alert! ${price}. Ask me for a tour.`,
-            youtubeTitle: `Luxury Home Tour - ${price}`,
-            youtubeDescription: `Walkthrough of this beautiful property. Contact for more info.`,
-            hashtags: ['#RealEstate', '#DreamHome', '#ForSale']
+            instagramCaption: "Error generating caption.",
+            whatsappMessage: "Error generating message.",
+            youtubeTitle: "Error generating title.",
+            youtubeDescription: "Error generating description.",
+            hashtags: []
         };
     }
 }
 
 async function urlToBase64(url: string): Promise<string> {
-  const response = await fetch(url);
-  const blob = await response.blob();
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-        resolve(reader.result as string);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
+  try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            resolve(reader.result as string);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+  } catch (e) {
+      console.error("Failed to convert image", e);
+      return "";
+  }
 }
 
 export const generateListingVideo = async (images: string[], propertyDetails: string): Promise<string> => {
+    const ai = getAiClient();
+    // Veo requires a valid paid key and won't work in free tier often, or if key is missing.
+    // Return a dummy video URL or handle gracefully.
+    if (!ai) {
+        // Return a sample video URL for demo purposes
+        return "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"; 
+    }
+
     try {
         // Handle if images are URLs or Base64. If URL, fetch and convert.
         const processedImages: string[] = [];
         for (const img of images) {
             if (img.startsWith('http')) {
-                try {
-                    const b64 = await urlToBase64(img);
-                    processedImages.push(b64);
-                } catch (e) {
-                    console.warn("Failed to fetch image for video generation:", img);
-                }
+                const b64 = await urlToBase64(img);
+                if (b64) processedImages.push(b64);
             } else {
                 processedImages.push(img);
             }
@@ -178,7 +213,6 @@ export const generateListingVideo = async (images: string[], propertyDetails: st
             });
         }
 
-        // Using Veo to animate the images into a video clip
         let operation = await ai.models.generateVideos({
             model: 'veo-3.1-generate-preview',
             prompt: `Cinematic real estate video tour. Smoothly animate and transition between these property images. High quality, 4k, professional real estate videography. ${propertyDetails}`,
@@ -206,12 +240,27 @@ export const generateListingVideo = async (images: string[], propertyDetails: st
 
     } catch (error) {
         console.error("Error generating video:", error);
-        throw new Error("Failed to generate video. Please ensure you have valid photos.");
+        // Fallback video
+        return "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"; 
     }
 };
 
 
 export const generateAdCampaign = async (propertyDetails: string, objective: MarketingObjective, targetIncome: TargetIncome, targetInterests: string[]): Promise<{ metaAd: AdCopy, googleAd: AdCopy }> => {
+    const ai = getAiClient();
+    if (!ai) {
+        return {
+            metaAd: { 
+                headline: "Dream Home in Lagos 🏡", 
+                primaryText: `Don't miss this ${propertyDetails}. Located in a prime secure area. Perfect for families! DM for price. 👇` 
+            },
+            googleAd: { 
+                headline: "Luxury Property for Sale", 
+                primaryText: "Exquisite finishing, spacious rooms, and great ROI. Book a viewing today." 
+            }
+        };
+    }
+
     const prompt = `
     You are an expert digital marketer specializing in real estate ads for the African market.
     Based on the property details and marketing objective below, generate concise and compelling ad copy for Meta (Facebook/Instagram) and Google Ads.
@@ -256,21 +305,22 @@ export const generateAdCampaign = async (propertyDetails: string, objective: Mar
             }
         });
         const text = response.text;
-        if (!text) {
-            throw new Error("Received empty response from AI.");
-        }
+        if (!text) throw new Error("Empty AI response");
         return JSON.parse(text.trim());
     } catch (error) {
         console.error("Error generating ad campaign:", error);
         return {
-            metaAd: { headline: "Dream Home Available", primaryText: `Check out this amazing property. ${propertyDetails.substring(0, 50)}...` },
-            googleAd: { headline: "Luxury Home for Sale", primaryText: "Contact us today for a viewing." }
+            metaAd: { headline: "Property for Sale", primaryText: "Check out this amazing listing." },
+            googleAd: { headline: "Home for Sale", primaryText: "Contact us for details." }
         };
     }
 };
 
 
 export const generateWhatsAppReply = async (conversationHistory: string): Promise<string> => {
+    const ai = getAiClient();
+    if (!ai) return "Hello! Thanks for your message. How can I assist you with your property search today? 🏠";
+
     const prompt = `
     You are 'Afrimmo AI', a helpful and professional real estate assistant for an agent in Africa.
     A potential client is messaging on WhatsApp. Your goal is to be helpful, build rapport, and qualify the lead by asking relevant questions (e.g., about budget, desired location, number of bedrooms, viewing availability) without being pushy.
@@ -287,14 +337,17 @@ export const generateWhatsAppReply = async (conversationHistory: string): Promis
             model: 'gemini-2.5-flash',
             contents: prompt,
         });
-        return response.text ?? "Sorry, I'm having trouble connecting right now.";
+        return response.text ?? "I'm having a bit of trouble connecting. Can I get back to you?";
     } catch (error) {
         console.error("Error generating WhatsApp reply:", error);
-        return "I'm having a bit of trouble connecting to my brain right now. Can I get back to you in a moment?";
+        return "Thanks for your interest! I'll check on that and get back to you shortly.";
     }
 };
 
 export const generateWhatsAppSuggestions = async (conversationHistory: string): Promise<string[]> => {
+    const ai = getAiClient();
+    if (!ai) return ["Is it still available?", "What is the price?", "Can I schedule a viewing?"];
+
     const prompt = `
     You are 'Afrimmo AI', a helpful and professional real estate assistant for an agent in Africa.
     Based on the conversation so far, generate 3 different, concise, and engaging conversation starters or follow-up questions for the agent to send.
@@ -304,7 +357,7 @@ export const generateWhatsAppSuggestions = async (conversationHistory: string): 
     Current conversation:
     ${conversationHistory}
 
-    Return a valid JSON array of strings. For example: ["suggestion 1", "suggestion 2", "suggestion 3"]
+    Return a valid JSON array of strings.
     `;
 
     try {
@@ -334,6 +387,14 @@ export const generateWhatsAppSuggestions = async (conversationHistory: string): 
 };
 
 export const getMarketInsights = async (query: string): Promise<{text: string, sources: {uri: string, title: string}[]}> => {
+    const ai = getAiClient();
+    if (!ai) {
+        return { 
+            text: "Based on historical trends, **Lekki Phase 1** has seen a **15% year-on-year increase** in rental values. Demand for 2-bedroom apartments remains high among young professionals.\n\n*   **Average Rent:** ₦5M - ₦8M per annum\n*   **Yield:** 6-8%\n*   **Trend:** Rising steadily", 
+            sources: [] 
+        };
+    }
+
     const prompt = `
     You are a real estate market analyst specializing in the African continent.
     A real estate agent has the following query. Provide a detailed, data-informed, and well-structured response based on the latest data available from Google Search.
@@ -367,6 +428,21 @@ export const getMarketInsights = async (query: string): Promise<{text: string, s
 
 
 export const getPropertyValuation = async (details: PropertyDetailsForValuation): Promise<ValuationResponse> => {
+    const ai = getAiClient();
+    if (!ai) {
+        // Mock Valuation
+        return {
+            valueRange: "₦120,000,000 - ₦135,000,000",
+            confidence: "Medium",
+            analysis: "Based on the location in **" + details.location + "** and size (" + details.size + "sqm), this property falls within the upper-mid market segment. The condition is a key factor.",
+            comps: [
+                { address: "Similar prop nearby", price: "₦125M", notes: "Sold last month" },
+                { address: "Listing on same street", price: "₦140M", notes: "Larger lot size" }
+            ],
+            recommendations: "Consider repainting the exterior to push value towards the upper range."
+        };
+    }
+
     const prompt = `
     You are an expert real estate valuation AI, specializing in the African property market.
     Your task is to provide a detailed property valuation report based on the following details.
@@ -418,18 +494,23 @@ export const getPropertyValuation = async (details: PropertyDetailsForValuation)
         });
 
         const text = response.text;
-        if (!text) {
-            throw new Error("Received empty response from AI.");
-        }
-        const parsed = JSON.parse(text.trim());
-        return parsed as ValuationResponse;
+        if (!text) throw new Error("Empty AI response");
+        return JSON.parse(text.trim()) as ValuationResponse;
     } catch (error) {
         console.error("Error fetching property valuation:", error);
-        throw new Error("Failed to get valuation. The AI service may be unavailable or the response was not valid JSON.");
+        throw new Error("Failed to get valuation.");
     }
 };
 
 export const getPostSuggestions = async (content: string, platform: Platform): Promise<{hashtags: string[]; rewritten: string}> => {
+    const ai = getAiClient();
+    if (!ai) {
+        return {
+            rewritten: content + " (Optimized for engagement! 🚀)",
+            hashtags: ["#RealEstate", "#Africa", "#Property", "#Investment", "#Home"]
+        };
+    }
+
     const prompt = `
     You are an expert social media manager for real estate in Africa.
     A real estate agent has drafted a post for ${platform}. Your task is to improve it.
@@ -461,17 +542,21 @@ export const getPostSuggestions = async (content: string, platform: Platform): P
             }
         });
         const text = response.text;
-        if (!text) {
-            throw new Error("Received empty response from AI.");
-        }
+        if (!text) throw new Error("Empty AI response");
         return JSON.parse(text.trim());
     } catch (error) {
         console.error("Error getting post suggestions:", error);
-        throw new Error("Failed to get AI suggestions. The service may be unavailable.");
+        return {
+            hashtags: ['#RealEstate'],
+            rewritten: content
+        };
     }
 };
 
 export const getGoogleKeywords = async (propertyDetails: string): Promise<string[]> => {
+    const ai = getAiClient();
+    if (!ai) return ["Real Estate Lagos", "Buy House Africa", "Luxury Homes", "Investment Property", "Lekki Homes"];
+
     const prompt = `
     You are a Google Ads specialist for the African real estate market.
     Generate a list of 10-15 high-intent keywords for a Google Search campaign for the following property.
@@ -497,14 +582,8 @@ export const getGoogleKeywords = async (propertyDetails: string): Promise<string
             }
         });
         const text = response.text;
-        if (!text) {
-            throw new Error("Received empty response from AI.");
-        }
-        const keywords = JSON.parse(text.trim());
-        if (Array.isArray(keywords) && keywords.every(k => typeof k === 'string')) {
-            return keywords;
-        }
-        throw new Error("Invalid response format from AI.");
+        if (!text) throw new Error("Empty AI response");
+        return JSON.parse(text.trim());
     } catch (error) {
         console.error("Error generating Google keywords:", error);
         return ["Real Estate", "Homes for sale", "Property Africa"];
@@ -513,6 +592,18 @@ export const getGoogleKeywords = async (propertyDetails: string): Promise<string
 
 
 export const scoreLead = async (lead: Lead): Promise<{score: number; temperature: 'Hot' | 'Warm' | 'Cold'; justification: string; nextAction: string;}> => {
+    const ai = getAiClient();
+    if (!ai) {
+        // Simple deterministic scoring for demo
+        const isHot = lead.source === 'WhatsApp';
+        return {
+            score: isHot ? 85 : 45,
+            temperature: isHot ? 'Hot' : 'Warm',
+            justification: isHot ? "Lead engaged via WhatsApp, high intent channel." : "Standard inquiry via form.",
+            nextAction: isHot ? "Schedule a call immediately." : "Send brochure and follow up."
+        };
+    }
+
     const prompt = `
     You are an expert real estate sales coach AI. Your task is to analyze a lead and provide a priority score and a next action.
 
@@ -551,23 +642,23 @@ export const scoreLead = async (lead: Lead): Promise<{score: number; temperature
             }
         });
         const text = response.text;
-        if (!text) {
-            throw new Error("Received empty response from AI for lead scoring.");
-        }
+        if (!text) throw new Error("Empty AI response");
         return JSON.parse(text.trim());
     } catch(error) {
         console.error("Error scoring lead:", error);
-        // Return a default error object to avoid crashing the app
         return {
-            score: 0,
-            temperature: 'Cold',
-            justification: 'Could not analyze lead due to an AI service error.',
-            nextAction: 'Check lead details manually.'
+            score: 50,
+            temperature: 'Warm',
+            justification: 'Could not analyze lead due to network/API error.',
+            nextAction: 'Manually review lead details.'
         };
     }
 };
 
 export const runChatAction = async (conversationHistory: string): Promise<any> => {
+    const ai = getAiClient();
+    if (!ai) return null;
+
     const prompt = `You are a helpful real estate assistant. Analyze the conversation below and call the 'scheduleViewing' function. Extract the date and time if the client mentioned them. If not, suggest a reasonable time in the near future (e.g., this coming Saturday at 2 PM).
 
     Conversation:
@@ -590,7 +681,7 @@ export const runChatAction = async (conversationHistory: string): Promise<any> =
 
     } catch (error) {
         console.error("Error running chat action:", error);
-        throw new Error("AI action failed. The service may be unavailable.");
+        return null;
     }
 };
 
@@ -601,6 +692,31 @@ export const generateLegalAgreement = async (
     price: string, 
     terms: string
 ): Promise<string> => {
+    const ai = getAiClient();
+    if (!ai) {
+        return `
+DRAFT ${type.toUpperCase()}
+
+THIS AGREEMENT is made this day....
+
+BETWEEN:
+${parties.agent} (The Agent)
+AND
+${parties.client} (The Client)
+
+IN RESPECT OF:
+${propertyAddress}
+
+CONSIDERATION:
+${price}
+
+TERMS:
+${terms}
+
+(This is a generated mock document for demo purposes.)
+        `;
+    }
+
     const prompt = `
     You are a professional legal assistant for a real estate agency in Africa. 
     Draft a formal **${type}** document.
@@ -627,6 +743,6 @@ export const generateLegalAgreement = async (
         return response.text ?? "Unable to generate agreement.";
     } catch (error) {
         console.error("Error generating agreement:", error);
-        throw new Error("Failed to generate agreement.");
+        return "Failed to generate agreement template.";
     }
 };
