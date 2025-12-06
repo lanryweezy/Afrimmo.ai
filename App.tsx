@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import BottomNavBar from './components/BottomNavBar';
@@ -10,7 +8,7 @@ import Marketing from './components/Marketing';
 import Tools from './components/Tools';
 import Settings from './components/Settings';
 import LandingPage from './components/LandingPage';
-import { Page, Lead, Listing, LeadStatus, AgentGoals } from './types';
+import { Page, Lead, Listing, AgentGoals } from './types';
 import { scoreLead } from './services/geminiService';
 import Sidebar from './components/Sidebar';
 

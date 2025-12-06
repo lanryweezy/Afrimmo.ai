@@ -1,9 +1,6 @@
-
-
 import { GoogleGenAI, Type, FunctionDeclaration, VideoGenerationReferenceType, VideoGenerationReferenceImage } from "@google/genai";
 import { ContentType, PropertyDetailsForValuation, ValuationResponse, Platform, MarketingObjective, AudiencePersona, AdCopy, Lead, SocialBundle, TargetIncome } from '../types';
 
-// FIX: Initialize GoogleGenAI directly with the environment variable as per guidelines.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const scheduleViewingFunctionDeclaration: FunctionDeclaration = {
@@ -309,16 +306,16 @@ export const generateWhatsAppSuggestions = async (conversationHistory: string): 
             }
         });
         
-        const text = response.text.trim();
+        const text = response.text?.trim() || '[]';
         const parsed = JSON.parse(text);
         if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
           return parsed;
         }
-        throw new Error("Invalid response format from AI for suggestions.");
+        return ["Hi there! Still interested?", "Any questions?", "Can I help?"];
 
     } catch (error) {
         console.error("Error generating WhatsApp suggestions:", error);
-        throw new Error("Failed to generate suggestions. Please try again.");
+        return ["Hello!", "How can I help?", "Are you free for a call?"];
     }
 };
 
