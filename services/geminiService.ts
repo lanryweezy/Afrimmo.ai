@@ -67,7 +67,12 @@ export const generateMarketingContent = async (
 
   } catch (error) {
     console.error("Error generating marketing content:", error);
-    throw new Error("Failed to generate content. Please check your API key and try again.");
+    // Fallback content to ensure app doesn't crash
+    return [
+        `Discover this amazing property: ${propertyDetails.substring(0, 50)}... Contact us for more!`,
+        `New Listing Alert! ${propertyDetails.substring(0, 50)}... Perfect for ${audience}.`,
+        `Don't miss out on this opportunity. ${propertyDetails.substring(0, 50)}... DM for details.`
+    ];
   }
 };
 
@@ -112,7 +117,13 @@ export const generateSocialBundle = async (propertyDetails: string, price: strin
         return JSON.parse(text.trim());
     } catch (error) {
         console.error("Error generating social bundle:", error);
-        throw new Error("Failed to generate social bundle.");
+        return {
+            instagramCaption: `Check out this stunning property! ${price}. DM for details.`,
+            whatsappMessage: `New Listing Alert! ${price}. Ask me for a tour.`,
+            youtubeTitle: `Luxury Home Tour - ${price}`,
+            youtubeDescription: `Walkthrough of this beautiful property. Contact for more info.`,
+            hashtags: ['#RealEstate', '#DreamHome', '#ForSale']
+        };
     }
 }
 
@@ -251,7 +262,10 @@ export const generateAdCampaign = async (propertyDetails: string, objective: Mar
         return JSON.parse(text.trim());
     } catch (error) {
         console.error("Error generating ad campaign:", error);
-        throw new Error("Failed to generate ad copy. The AI service may be unavailable.");
+        return {
+            metaAd: { headline: "Dream Home Available", primaryText: `Check out this amazing property. ${propertyDetails.substring(0, 50)}...` },
+            googleAd: { headline: "Luxury Home for Sale", primaryText: "Contact us today for a viewing." }
+        };
     }
 };
 
@@ -276,7 +290,7 @@ export const generateWhatsAppReply = async (conversationHistory: string): Promis
         return response.text ?? "Sorry, I'm having trouble connecting right now.";
     } catch (error) {
         console.error("Error generating WhatsApp reply:", error);
-        throw new Error("Failed to generate reply. The AI service may be unavailable.");
+        return "I'm having a bit of trouble connecting to my brain right now. Can I get back to you in a moment?";
     }
 };
 
@@ -347,7 +361,7 @@ export const getMarketInsights = async (query: string): Promise<{text: string, s
         return { text, sources };
     } catch (error) {
         console.error("Error fetching market insights:", error);
-        throw new Error("Failed to fetch insights. The AI service may be unavailable.");
+        return { text: "Market insights are currently unavailable. Please try again later.", sources: [] };
     }
 };
 
@@ -493,7 +507,7 @@ export const getGoogleKeywords = async (propertyDetails: string): Promise<string
         throw new Error("Invalid response format from AI.");
     } catch (error) {
         console.error("Error generating Google keywords:", error);
-        throw new Error("Failed to generate keywords. The AI service may be unavailable.");
+        return ["Real Estate", "Homes for sale", "Property Africa"];
     }
 };
 

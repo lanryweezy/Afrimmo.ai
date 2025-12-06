@@ -79,12 +79,22 @@ const mockListingsData: Listing[] = [
     },
 ];
 
+// Initialize with valid default values to prevent crash if AI fails
+const initialLeads: Lead[] = mockLeadsData.map(l => ({
+    ...l,
+    score: 50,
+    temperature: 'Warm',
+    justification: 'Analysis pending...',
+    nextAction: 'Review details',
+    conversation: l.conversation || []
+}));
+
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentPage, setCurrentPage] = useState<Page>('today');
-  const [leads, setLeads] = useState<Lead[]>([]);
+  const [leads, setLeads] = useState<Lead[]>(initialLeads);
   const [listings, setListings] = useState<Listing[]>(mockListingsData);
-  const [isLoadingLeads, setIsLoadingLeads] = useState(true);
+  const [isLoadingLeads, setIsLoadingLeads] = useState(false); // Changed default to false to show UI immediately
   const [selectedListingForMarketing, setSelectedListingForMarketing] = useState<Listing | null>(null);
   
   // Goals State
@@ -99,18 +109,24 @@ const App: React.FC = () => {
         const fetchScores = async () => {
             setIsLoadingLeads(true);
             try {
+                // Fetch scores progressively so we can update state without blocking
                 const scoredLeadsPromises = mockLeadsData.map(async (leadData) => {
                     const leadForScoring = { ...leadData, history: leadData.history || [], notes: leadData.notes || '', conversation: leadData.conversation || [] };
-                    const scoreData = await scoreLead(leadForScoring);
-                    return { ...leadForScoring, ...scoreData };
+                    try {
+                        const scoreData = await scoreLead(leadForScoring);
+                        return { ...leadForScoring, ...scoreData };
+                    } catch (e) {
+                        // Fallback for individual lead failure
+                        return { ...leadForScoring, score: 50, temperature: 'Warm', justification: 'AI scoring unavailable', nextAction: 'Check connection' } as Lead;
+                    }
                 });
+                
                 const scoredLeads = await Promise.all(scoredLeadsPromises);
                 setLeads(scoredLeads.sort((a, b) => (b.score || 0) - (a.score || 0)));
             } catch (error) {
                 console.error("Failed to score leads:", error);
-                // Fallback to unscored leads if AI fails
-                const unscoredLeads = mockLeadsData.map(l => ({...l, history: l.history || [], notes: l.notes || '', conversation: l.conversation || []}));
-                setLeads(unscoredLeads);
+                // We already have initial leads, so we don't need to do anything drastic here.
+                // Just keep the defaults.
             } finally {
                 setIsLoadingLeads(false);
             }
