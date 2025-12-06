@@ -404,7 +404,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
             </div>
 
             {/* How It Works Section */}
-            <section id="how-it-works" className="py-24 relative overflow-hidden scroll-mt-24">
+            <section id="how-it-works" className="py-24 relative overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <img 
                         src="https://images.unsplash.com/photo-1577083552431-6e5fd01988ec?auto=format&fit=crop&q=80" 
@@ -451,7 +451,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
             </section>
 
             {/* Features Section */}
-            <section id="features" className="py-24 relative overflow-hidden bg-slate-900/30 scroll-mt-24">
+            <section id="features" className="py-24 relative overflow-hidden bg-slate-900/30">
                 <div className="absolute inset-0 z-0">
                     <img 
                         src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80" 
@@ -490,7 +490,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
             </section>
 
             {/* Testimonials Section */}
-            <section id="testimonials" className="py-24 bg-slate-950 relative overflow-hidden scroll-mt-24">
+            <section id="testimonials" className="py-24 bg-slate-950 relative overflow-hidden">
                  {/* Decorative background image */}
                 <div className="absolute inset-0 z-0">
                     <img 
@@ -569,7 +569,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
             </section>
 
             {/* Live Demo Section */}
-            <section id="demo" className="py-24 relative overflow-hidden scroll-mt-24">
+            <section id="demo" className="py-24 relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
                         <div className="mb-12 lg:mb-0 relative z-10">
@@ -639,7 +639,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
             </section>
 
             {/* Pricing Section */}
-            <section id="pricing" className="py-24 bg-slate-900/30 scroll-mt-24">
+            <section id="pricing" className="py-24 bg-slate-900/30">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
@@ -694,7 +694,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
             </section>
 
              {/* FAQ Section */}
-             <section id="faq" className="py-24 scroll-mt-24">
+             <section id="faq" className="py-24">
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
                      <div className="text-center mb-12">
                         <h2 className="text-3xl font-extrabold text-white">Frequently Asked Questions</h2>
