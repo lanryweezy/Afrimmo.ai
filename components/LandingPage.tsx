@@ -203,9 +203,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                     <img 
                         src="https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2700&auto=format&fit=crop" 
                         alt="Modern Luxury Real Estate Background" 
-                        className="w-full h-full object-cover opacity-20"
+                        className="w-full h-full object-cover opacity-60"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-slate-950 via-slate-950/90 to-slate-950"></div>
+                    <div className="absolute inset-0 bg-gradient-to-b from-slate-950/80 via-slate-950/40 to-slate-950"></div>
                 </div>
                 
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-emerald-500/20 blur-[120px] rounded-full opacity-30 pointer-events-none z-0"></div>
@@ -221,7 +221,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                         <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-500">Real Estate Business</span>
                     </h1>
                     
-                    <p className="mt-4 text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
+                    <p className="mt-4 text-lg md:text-xl text-slate-200 max-w-2xl mx-auto mb-10 leading-relaxed font-light drop-shadow-md">
                         Automate listings, generate viral video content, and qualify leads on WhatsApp 24/7. 
                         Built specifically for the dynamic African property market.
                     </p>
@@ -230,7 +230,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                         <Button onClick={onLogin} className="px-8 py-4 text-lg w-full sm:w-auto shadow-xl shadow-emerald-500/20">
                             Start Free Trial <ChevronRightIcon className="w-5 h-5 ml-1" />
                         </Button>
-                        <button onClick={onLogin} className="flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white bg-slate-800/80 hover:bg-slate-700 backdrop-blur-sm rounded-xl transition-all w-full sm:w-auto justify-center border border-slate-700">
+                        <button onClick={onLogin} className="flex items-center gap-2 px-8 py-4 text-lg font-semibold text-white bg-slate-900/60 hover:bg-slate-800/80 backdrop-blur-sm rounded-xl transition-all w-full sm:w-auto justify-center border border-slate-700">
                             <PlayIcon className="w-5 h-5 text-emerald-400" /> Watch Demo
                         </button>
                     </div>
