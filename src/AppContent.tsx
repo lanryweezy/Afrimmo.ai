@@ -9,6 +9,7 @@ import Marketing from '../components/Marketing';
 import Tools from '../components/Tools';
 import Settings from '../components/Settings';
 import LandingPage from '../components/LandingPage';
+import SEO from './components/SEO';
 import { Page, Lead, Listing } from '../types';
 import { scoreLead } from '../services/geminiService';
 import Sidebar from '../components/Sidebar';
@@ -81,6 +82,8 @@ const mockListingsData: Listing[] = [
 ];
 
 const AppContent: React.FC = () => {
+  useDynamicSEO(); // Add dynamic SEO hook
+
   const {
     leads,
     listings,

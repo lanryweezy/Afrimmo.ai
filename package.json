@@ -15,12 +15,15 @@
     "test:ui": "vitest --ui",
     "coverage": "vitest run --coverage",
     "clean": "rimraf dist",
-    "validate": "npm run type-check && npm run lint && npm run test"
+    "validate": "npm run type-check && npm run lint && npm run test",
+    "seo:audit": "npm run build && echo 'Run SEO audit tools like Lighthouse, Ahrefs, or SEMrush'",
+    "sitemap:generate": "echo 'Generate sitemap using a sitemap generator tool'"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-helmet": "^6.1.0",
     "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
@@ -30,6 +33,7 @@
     "@types/node": "^22.19.1",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@types/react-helmet": "^6.1.11",
     "@types/react-router-dom": "^5.3.3",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@typescript-eslint/parser": "^8.18.0",
