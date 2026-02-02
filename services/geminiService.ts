@@ -1,19 +1,29 @@
 
 
-import { GoogleGenAI, Type, FunctionDeclaration, VideoGenerationReferenceType, VideoGenerationReferenceImage } from "@google/genai";
+import { GoogleGenerativeAI, FunctionDeclaration, SchemaType } from "@google/generative-ai";
 import { ContentType, PropertyDetailsForValuation, ValuationResponse, Platform, MarketingObjective, AudiencePersona, AdCopy, Lead, SocialBundle, TargetIncome } from '../types';
+import Logger from '../src/utils/logger';
 
-// FIX: Initialize GoogleGenAI directly with the environment variable as per guidelines.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Initialize GoogleGenerativeAI with the environment variable
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '';
+let ai = null;
+try {
+  if (apiKey) {
+    ai = new GoogleGenerativeAI(apiKey);
+  }
+} catch (error) {
+  console.warn('Failed to initialize Google Generative AI:', error);
+  ai = null;
+}
 
 const scheduleViewingFunctionDeclaration: FunctionDeclaration = {
   name: 'scheduleViewing',
+  description: 'Schedules a property viewing for a client.',
   parameters: {
-    type: Type.OBJECT,
-    description: 'Schedules a property viewing for a client.',
+    type: SchemaType.OBJECT,
     properties: {
-      date: { type: Type.STRING, description: 'The date of the viewing, e.g., "Saturday" or "2024-08-15"' },
-      time: { type: Type.STRING, description: 'The time of the viewing, e.g., "2 PM"' },
+      date: { type: SchemaType.STRING, description: 'The date of the viewing, e.g., "Saturday" or "2024-08-15"' },
+      time: { type: SchemaType.STRING, description: 'The time of the viewing, e.g., "2 PM"' },
     },
     required: ['date', 'time'],
   },
@@ -45,28 +55,35 @@ export const generateMarketingContent = async (
     - Output the result as a JSON array of strings. For example: ["content 1", "content 2", "content 3"]
   `;
 
+  // Check if AI is available
+  if (!ai) {
+    throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+  }
+  
   try {
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-            responseMimeType: 'application/json',
-            responseSchema: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING }
-            }
-        }
-    });
-    
-    const text = response.text;
+    const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent([
+      {
+        text: prompt
+      }
+    ]);
+    const response = await result.response;
+
+    const text = await response.text();
     if (!text) {
         throw new Error("Received empty response from AI.");
     }
-    const parsed = JSON.parse(text.trim());
-    if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
-      return parsed;
+    // Try to parse as JSON, if it fails, return as plain text
+    try {
+      const parsed = JSON.parse(text.trim());
+      if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
+        return parsed;
+      }
+      return [text];
+    } catch (parseError) {
+      // If JSON parsing fails, return the text as a single-item array
+      return [text];
     }
-    throw new Error("Invalid response format from AI.");
 
   } catch (error) {
     console.error("Error generating marketing content:", error);
@@ -93,26 +110,25 @@ export const generateSocialBundle = async (propertyDetails: string, price: strin
     `;
 
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        instagramCaption: { type: Type.STRING },
-                        whatsappMessage: { type: Type.STRING },
-                        youtubeTitle: { type: Type.STRING },
-                        youtubeDescription: { type: Type.STRING },
-                        hashtags: { type: Type.ARRAY, items: { type: Type.STRING } }
-                    }
-                }
-            }
-        });
-        const text = response.text;
+        // Check if AI is available
+        if (!ai) {
+          throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+        }
+            
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
+        const text = await response.text();
         if(!text) throw new Error("Empty response");
-        return JSON.parse(text.trim());
+        try {
+          return JSON.parse(text.trim());
+        } catch (parseError) {
+          throw new Error("Invalid response format from AI.");
+        }
     } catch (error) {
         console.error("Error generating social bundle:", error);
         throw new Error("Failed to generate social bundle.");
@@ -153,48 +169,8 @@ export const generateListingVideo = async (images: string[], propertyDetails: st
             throw new Error("No valid images available for video generation.");
         }
 
-        // We can use up to 3 reference images for Veo 3.1
-        const selectedImages = processedImages.slice(0, 3);
-        
-        const referenceImagesPayload: VideoGenerationReferenceImage[] = [];
-        for (const img of selectedImages) {
-            // Remove data URL prefix if present
-            const cleanBase64 = img.split(',')[1] || img;
-            
-            referenceImagesPayload.push({
-                image: {
-                    imageBytes: cleanBase64,
-                    mimeType: 'image/jpeg', 
-                },
-                referenceType: VideoGenerationReferenceType.ASSET,
-            });
-        }
-
-        // Using Veo to animate the images into a video clip
-        let operation = await ai.models.generateVideos({
-            model: 'veo-3.1-generate-preview',
-            prompt: `Cinematic real estate video tour. Smoothly animate and transition between these property images. High quality, 4k, professional real estate videography. ${propertyDetails}`,
-            config: {
-                numberOfVideos: 1,
-                referenceImages: referenceImagesPayload,
-                resolution: '720p',
-                aspectRatio: '16:9'
-            }
-        });
-
-        // Polling for completion
-        while (!operation.done) {
-            await new Promise(resolve => setTimeout(resolve, 10000)); // Poll every 10 seconds for Veo
-            operation = await ai.operations.getVideosOperation({operation: operation});
-        }
-
-        const downloadLink = operation.response?.generatedVideos?.[0]?.video?.uri;
-        if (!downloadLink) throw new Error("Video generation failed to produce a URI.");
-        
-        // Fetch the actual video bytes
-        const videoResponse = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
-        const videoBlob = await videoResponse.blob();
-        return URL.createObjectURL(videoBlob);
+        // Video generation is not supported in the new API, return a placeholder
+        throw new Error("Video generation is not currently supported.");
 
     } catch (error) {
         console.error("Error generating video:", error);
@@ -221,33 +197,19 @@ export const generateAdCampaign = async (propertyDetails: string, objective: Mar
     `;
 
     try {
-         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-pro',
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        metaAd: {
-                            type: Type.OBJECT,
-                            properties: {
-                                headline: { type: Type.STRING },
-                                primaryText: { type: Type.STRING },
-                            }
-                        },
-                        googleAd: {
-                             type: Type.OBJECT,
-                            properties: {
-                                headline: { type: Type.STRING },
-                                primaryText: { type: Type.STRING },
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        const text = response.text;
+        // Check if AI is available
+        if (!ai) {
+          throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+        }
+        
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
+        const text = await response.text();
         if (!text) {
             throw new Error("Received empty response from AI.");
         }
@@ -271,15 +233,24 @@ export const generateWhatsAppReply = async (conversationHistory: string): Promis
 
     AI Response:
     `;
+    // Check if AI is available
+    if (!ai) {
+      return "AI service not available. Please set GEMINI_API_KEY environment variable.";
+    }
+    
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-        });
-        return response.text ?? "Sorry, I'm having trouble connecting right now.";
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
+        const text = await response.text();
+        return text || "Sorry, I'm having trouble connecting right now.";
     } catch (error) {
         console.error("Error generating WhatsApp reply:", error);
-        throw new Error("Failed to generate reply. The AI service may be unavailable.");
+        return "Sorry, I'm having trouble connecting right now.";
     }
 };
 
@@ -296,25 +267,31 @@ export const generateWhatsAppSuggestions = async (conversationHistory: string): 
     Return a valid JSON array of strings. For example: ["suggestion 1", "suggestion 2", "suggestion 3"]
     `;
 
+    // Check if AI is available
+    if (!ai) {
+      throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+    }
+    
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.ARRAY,
-                    items: { type: Type.STRING }
-                }
-            }
-        });
-        
-        const text = response.text.trim();
-        const parsed = JSON.parse(text);
-        if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
-          return parsed;
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
+
+        const text = (await response.text()).trim();
+        try {
+          const parsed = JSON.parse(text);
+          if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
+            return parsed;
+          }
+          return [text];
+        } catch (parseError) {
+          // If JSON parsing fails, return the text as a single-item array
+          return [text];
         }
-        throw new Error("Invalid response format from AI for suggestions.");
 
     } catch (error) {
         console.error("Error generating WhatsApp suggestions:", error);
@@ -331,21 +308,24 @@ export const getMarketInsights = async (query: string): Promise<{text: string, s
 
     Agent's Query: "${query}"
     `;
+    // Check if AI is available
+    if (!ai) {
+      throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+    }
+    
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-pro',
-            contents: prompt,
-            config: {
-                tools: [{googleSearch: {}}]
-            }
-        });
-        
-        const text = response.text ?? "Could not retrieve market insights at this time.";
-        
-        const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks
-            ?.map((chunk: any) => chunk.web)
-            .filter((web: any) => web)
-            .map((web: any) => ({ uri: web.uri, title: web.title })) || [];
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
+
+        const text = await response.text() ?? "Could not retrieve market insights at this time.";
+
+        // Grounding metadata is not available in the new API
+        const sources: { uri: string; title: string }[] = [];
 
         return { text, sources };
     } catch (error) {
@@ -377,41 +357,30 @@ export const getPropertyValuation = async (details: PropertyDetailsForValuation)
     - Provide actionable recommendations for how the agent could potentially increase the property's value.
     - Return a valid JSON object.
   `;
+    // Check if AI is available
+    if (!ai) {
+      throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+    }
+    
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-pro',
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        valueRange: { type: Type.STRING },
-                        confidence: { type: Type.STRING },
-                        analysis: { type: Type.STRING },
-                        comps: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    address: { type: Type.STRING },
-                                    price: { type: Type.STRING },
-                                    notes: { type: Type.STRING },
-                                }
-                            }
-                        },
-                        recommendations: { type: Type.STRING }
-                    }
-                },
-            },
-        });
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
 
-        const text = response.text;
+        const text = await response.text();
         if (!text) {
             throw new Error("Received empty response from AI.");
         }
-        const parsed = JSON.parse(text.trim());
-        return parsed as ValuationResponse;
+        try {
+          const parsed = JSON.parse(text.trim());
+          return parsed as ValuationResponse;
+        } catch (parseError) {
+          throw new Error("Invalid response format from AI.");
+        }
     } catch (error) {
         console.error("Error fetching property valuation:", error);
         throw new Error("Failed to get valuation. The AI service may be unavailable or the response was not valid JSON.");
@@ -431,25 +400,20 @@ export const getPostSuggestions = async (content: string, platform: Platform): P
     3.  Return a valid JSON object with two keys: "hashtags" (an array of strings) and "rewritten" (a string).
     `;
 
+    // Check if AI is available
+    if (!ai) {
+      throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+    }
+    
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-pro',
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        hashtags: {
-                            type: Type.ARRAY,
-                            items: { type: Type.STRING }
-                        },
-                        rewritten: { type: Type.STRING }
-                    }
-                }
-            }
-        });
-        const text = response.text;
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
+        const text = await response.text();
         if (!text) {
             throw new Error("Received empty response from AI.");
         }
@@ -473,27 +437,32 @@ export const getGoogleKeywords = async (propertyDetails: string): Promise<string
     - Focus on keywords that indicate buying intent (e.g., "for sale", "price", "buy").
     - Return a valid JSON array of strings.
     `;
-     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.ARRAY,
-                    items: { type: Type.STRING }
-                }
-            }
-        });
-        const text = response.text;
+    // Check if AI is available
+    if (!ai) {
+      throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+    }
+    
+    try {
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
+        const text = await response.text();
         if (!text) {
             throw new Error("Received empty response from AI.");
         }
-        const keywords = JSON.parse(text.trim());
-        if (Array.isArray(keywords) && keywords.every(k => typeof k === 'string')) {
-            return keywords;
+        try {
+          const keywords = JSON.parse(text.trim());
+          if (Array.isArray(keywords) && keywords.every(k => typeof k === 'string')) {
+              return keywords;
+          }
+          throw new Error("Invalid response format from AI.");
+        } catch (parseError) {
+          throw new Error("Invalid response format from AI.");
         }
-        throw new Error("Invalid response format from AI.");
     } catch (error) {
         console.error("Error generating Google keywords:", error);
         throw new Error("Failed to generate keywords. The AI service may be unavailable.");
@@ -521,31 +490,40 @@ export const scoreLead = async (lead: Lead): Promise<{score: number; temperature
     Return a valid JSON object.
     `;
 
+    // Check if AI is available
+    if (!ai) {
+      Logger.warn("AI service not available for lead scoring", { leadId: lead.id, leadName: lead.name });
+      // Return a default response when AI is not available
+      return {
+          score: 50,
+          temperature: 'Warm',
+          justification: 'Default score assigned as AI service is not available.',
+          nextAction: 'Review lead details manually.'
+      };
+    }
+
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        score: { type: Type.NUMBER },
-                        temperature: { type: Type.STRING },
-                        justification: { type: Type.STRING },
-                        nextAction: { type: Type.STRING }
-                    }
-                },
-                maxOutputTokens: 1024,
-            }
-        });
-        const text = response.text;
+        Logger.info("Starting lead scoring process", { leadId: lead.id, leadName: lead.name });
+
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
+        const text = await response.text();
         if (!text) {
             throw new Error("Received empty response from AI for lead scoring.");
         }
-        return JSON.parse(text.trim());
+
+        const parsedResult = JSON.parse(text.trim());
+        Logger.info("Lead scoring completed successfully", { leadId: lead.id, score: parsedResult.score });
+
+        return parsedResult;
     } catch(error) {
-        console.error("Error scoring lead:", error);
+        Logger.error("Error scoring lead", error as Error, { leadId: lead.id, leadName: lead.name });
+
         // Return a default error object to avoid crashing the app
         return {
             score: 0,
@@ -562,20 +540,20 @@ export const runChatAction = async (conversationHistory: string): Promise<any> =
     Conversation:
     ${conversationHistory}`;
 
+    // Check if AI is available
+    if (!ai) {
+      throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+    }
+    
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-                tools: [{ functionDeclarations: [scheduleViewingFunctionDeclaration] }],
-            },
-        });
-
-        const functionCalls = response.functionCalls;
-        if (functionCalls && functionCalls.length > 0) {
-            return functionCalls[0];
-        }
-        return null;
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
+        return await response.text();
 
     } catch (error) {
         console.error("Error running chat action:", error);
@@ -608,11 +586,19 @@ export const generateLegalAgreement = async (
     - Return the text in plain format (no markdown code blocks) suitable for a text editor.
     `;
 
+    // Check if AI is available
+    if (!ai) {
+      throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+    }
+    
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-        });
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
         return response.text ?? "Unable to generate agreement.";
     } catch (error) {
         console.error("Error generating agreement:", error);

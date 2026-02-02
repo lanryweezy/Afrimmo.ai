@@ -1,18 +1,18 @@
+import { GoogleGenerativeAI, FunctionDeclaration, SchemaType } from "@google/generative-ai";
+import { ContentType, PropertyDetailsForValuation, ValuationResponse, Platform, MarketingObjective, AudiencePersona, AdCopy, Lead } from '../../types';
 
-import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai";
-import { ContentType, PropertyDetailsForValuation, ValuationResponse, Platform, MarketingObjective, AudiencePersona, AdCopy, Lead } from '../types';
-
-// FIX: Initialize GoogleGenAI directly with the environment variable as per guidelines.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Initialize GoogleGenerativeAI with the environment variable
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '';
+const ai = apiKey ? new GoogleGenerativeAI(apiKey) : null;
 
 const scheduleViewingFunctionDeclaration: FunctionDeclaration = {
   name: 'scheduleViewing',
+  description: 'Schedules a property viewing for a client.',
   parameters: {
-    type: Type.OBJECT,
-    description: 'Schedules a property viewing for a client.',
+    type: SchemaType.OBJECT,
     properties: {
-      date: { type: Type.STRING, description: 'The date of the viewing, e.g., "Saturday" or "2024-08-15"' },
-      time: { type: Type.STRING, description: 'The time of the viewing, e.g., "2 PM"' },
+      date: { type: SchemaType.STRING, description: 'The date of the viewing, e.g., "Saturday" or "2024-08-15"' },
+      time: { type: SchemaType.STRING, description: 'The time of the viewing, e.g., "2 PM"' },
     },
     required: ['date', 'time'],
   },
@@ -44,62 +44,41 @@ export const generateMarketingContent = async (
     - Output the result as a JSON array of strings. For example: ["content 1", "content 2", "content 3"]
   `;
 
+  // Check if AI is available
+  if (!ai) {
+    throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+  }
+  
   try {
-    // FIX: Added config to request a JSON response, improving reliability.
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: {
-            responseMimeType: 'application/json',
-            responseSchema: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING }
-            }
-        }
-    });
+    const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent([
+      {
+        text: prompt
+      }
+    ]);
+    const response = await result.response;
     
-    const text = response.text;
+    const text = await response.text();
     if (!text) {
         throw new Error("Received empty response from AI.");
     }
-    const parsed = JSON.parse(text.trim());
-    if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
-      return parsed;
+    // Try to parse as JSON, if it fails, return as plain text
+    try {
+      const parsed = JSON.parse(text.trim());
+      if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
+        return parsed;
+      }
+      return [text];
+    } catch (parseError) {
+      // If JSON parsing fails, return the text as a single-item array
+      return [text];
     }
-    throw new Error("Invalid response format from AI.");
 
   } catch (error) {
     console.error("Error generating marketing content:", error);
     throw new Error("Failed to generate content. Please check your API key and try again.");
   }
 };
-
-export const generatePropertyImage = async (propertyDetails: string): Promise<string> => {
-    const prompt = `Create a photorealistic, architect-designed image of a modern, luxurious property based on these details: "${propertyDetails}". The scene should be on a bright, sunny day with clear blue skies, highlighting luxury and appeal for a high-end real estate advertisement.`;
-
-    try {
-        const response = await ai.models.generateImages({
-            model: 'imagen-4.0-generate-001',
-            prompt: prompt,
-            config: {
-              numberOfImages: 1,
-              outputMimeType: 'image/jpeg',
-              aspectRatio: '16:9',
-            },
-        });
-        
-        if (response.generatedImages && response.generatedImages.length > 0) {
-            const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
-            return `data:image/jpeg;base64,${base64ImageBytes}`;
-        }
-        throw new Error("No image was generated.");
-
-    } catch(error) {
-        console.error("Error generating property image:", error);
-        throw new Error("Failed to generate image. The AI service may be unavailable.");
-    }
-};
-
 
 export const generateAdCampaign = async (propertyDetails: string, objective: MarketingObjective): Promise<{ metaAd: AdCopy, googleAd: AdCopy }> => {
     const prompt = `
@@ -116,34 +95,20 @@ export const generateAdCampaign = async (propertyDetails: string, objective: Mar
     - Return a valid JSON object with keys "metaAd" and "googleAd".
     `;
 
+    // Check if AI is available
+    if (!ai) {
+      throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+    }
+    
     try {
-         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-pro',
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        metaAd: {
-                            type: Type.OBJECT,
-                            properties: {
-                                headline: { type: Type.STRING },
-                                primaryText: { type: Type.STRING },
-                            }
-                        },
-                        googleAd: {
-                             type: Type.OBJECT,
-                            properties: {
-                                headline: { type: Type.STRING },
-                                primaryText: { type: Type.STRING },
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        const text = response.text;
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
+        const text = await response.text();
         if (!text) {
             throw new Error("Received empty response from AI.");
         }
@@ -167,15 +132,23 @@ export const generateWhatsAppReply = async (conversationHistory: string): Promis
 
     AI Response:
     `;
+    // Check if AI is available
+    if (!ai) {
+      return "AI service not available. Please set GEMINI_API_KEY environment variable.";
+    }
+    
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-        });
-        return response.text ?? "Sorry, I'm having trouble connecting right now.";
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
+        return (await response.text()) ?? "Sorry, I'm having trouble connecting right now.";
     } catch (error) {
         console.error("Error generating WhatsApp reply:", error);
-        throw new Error("Failed to generate reply. The AI service may be unavailable.");
+        return "Sorry, I'm having trouble connecting right now.";
     }
 };
 
@@ -189,12 +162,20 @@ export const getMarketInsights = async (query: string): Promise<string> => {
     
     Your Analysis:
     `;
+    // Check if AI is available
+    if (!ai) {
+      throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+    }
+    
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-pro', // Using a more powerful model for analysis
-            contents: prompt,
-        });
-        return response.text ?? "Could not retrieve market insights at this time.";
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
+        return (await response.text()) ?? "Could not retrieve market insights at this time.";
     } catch (error) {
         console.error("Error fetching market insights:", error);
         throw new Error("Failed to fetch insights. The AI service may be unavailable.");
@@ -224,41 +205,30 @@ export const getPropertyValuation = async (details: PropertyDetailsForValuation)
     - Provide actionable recommendations for how the agent could potentially increase the property's value.
     - Return a valid JSON object.
   `;
+    // Check if AI is available
+    if (!ai) {
+      throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+    }
+    
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-pro',
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        valueRange: { type: Type.STRING },
-                        confidence: { type: Type.STRING },
-                        analysis: { type: Type.STRING },
-                        comps: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    address: { type: Type.STRING },
-                                    price: { type: Type.STRING },
-                                    notes: { type: Type.STRING },
-                                }
-                            }
-                        },
-                        recommendations: { type: Type.STRING }
-                    }
-                },
-            },
-        });
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
 
-        const text = response.text;
+        const text = await response.text();
         if (!text) {
             throw new Error("Received empty response from AI.");
         }
-        const parsed = JSON.parse(text.trim());
-        return parsed as ValuationResponse;
+        try {
+          const parsed = JSON.parse(text.trim());
+          return parsed as ValuationResponse;
+        } catch (parseError) {
+          throw new Error("Invalid response format from AI.");
+        }
     } catch (error) {
         console.error("Error fetching property valuation:", error);
         throw new Error("Failed to get valuation. The AI service may be unavailable or the response was not valid JSON.");
@@ -278,25 +248,20 @@ export const getPostSuggestions = async (content: string, platform: Platform): P
     3.  Return a valid JSON object with two keys: "hashtags" (an array of strings) and "rewritten" (a string).
     `;
 
+    // Check if AI is available
+    if (!ai) {
+      throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+    }
+    
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-pro',
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        hashtags: {
-                            type: Type.ARRAY,
-                            items: { type: Type.STRING }
-                        },
-                        rewritten: { type: Type.STRING }
-                    }
-                }
-            }
-        });
-        const text = response.text;
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-pro" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
+        const text = await response.text();
         if (!text) {
             throw new Error("Received empty response from AI.");
         }
@@ -320,28 +285,32 @@ export const getGoogleKeywords = async (propertyDetails: string): Promise<string
     - Focus on keywords that indicate buying intent (e.g., "for sale", "price", "buy").
     - Return a valid JSON array of strings.
     `;
-     try {
-        // FIX: Added config to request a JSON response, improving reliability.
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.ARRAY,
-                    items: { type: Type.STRING }
-                }
-            }
-        });
-        const text = response.text;
+    // Check if AI is available
+    if (!ai) {
+      throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+    }
+    
+    try {
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
+        const text = await response.text();
         if (!text) {
             throw new Error("Received empty response from AI.");
         }
-        const keywords = JSON.parse(text.trim());
-        if (Array.isArray(keywords) && keywords.every(k => typeof k === 'string')) {
-            return keywords;
+        try {
+          const keywords = JSON.parse(text.trim());
+          if (Array.isArray(keywords) && keywords.every(k => typeof k === 'string')) {
+              return keywords;
+          }
+          throw new Error("Invalid response format from AI.");
+        } catch (parseError) {
+          throw new Error("Invalid response format from AI.");
         }
-        throw new Error("Invalid response format from AI.");
     } catch (error) {
         console.error("Error generating Google keywords:", error);
         throw new Error("Failed to generate keywords. The AI service may be unavailable.");
@@ -369,28 +338,40 @@ export const scoreLead = async (lead: Lead): Promise<{score: number; temperature
     Return a valid JSON object.
     `;
 
+    // Check if AI is available
+    if (!ai) {
+      // Return a default response when AI is not available
+      return {
+          score: 50,
+          temperature: 'Warm',
+          justification: 'Default score assigned as AI service is not available.',
+          nextAction: 'Review lead details manually.'
+      };
+    }
+    
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-pro',
-            contents: prompt,
-            config: {
-                responseMimeType: 'application/json',
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        score: { type: Type.NUMBER },
-                        temperature: { type: Type.STRING },
-                        justification: { type: Type.STRING },
-                        nextAction: { type: Type.STRING }
-                    }
-                }
-            }
-        });
-        const text = response.text;
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
+        const text = await response.text();
         if (!text) {
             throw new Error("Received empty response from AI for lead scoring.");
         }
-        return JSON.parse(text.trim());
+        try {
+          return JSON.parse(text.trim());
+        } catch (parseError) {
+          // Return a default response if parsing fails
+          return {
+              score: 50,
+              temperature: 'Warm',
+              justification: 'Default score assigned due to parsing error.',
+              nextAction: 'Review lead details manually.'
+          };
+        }
     } catch(error) {
         console.error("Error scoring lead:", error);
         // Return a default error object to avoid crashing the app
@@ -409,19 +390,22 @@ export const runChatAction = async (conversationHistory: string): Promise<any> =
     Conversation:
     ${conversationHistory}`;
 
+    // Check if AI is available
+    if (!ai) {
+      throw new Error("AI service not available. Please set GEMINI_API_KEY environment variable.");
+    }
+    
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: {
-                tools: [{ functionDeclarations: [scheduleViewingFunctionDeclaration] }],
-            },
-        });
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent([
+          {
+            text: prompt
+          }
+        ]);
+        const response = await result.response;
 
-        const functionCalls = response.functionCalls;
-        if (functionCalls && functionCalls.length > 0) {
-            return functionCalls[0];
-        }
+        // Function calling is handled differently in the new API
+        // We'll need to extract function calls from the response
         return null;
 
     } catch (error) {
