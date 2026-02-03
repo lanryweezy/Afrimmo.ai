@@ -1,0 +1,90 @@
+# Real Estate AI Agent - Afrimmo AI
+# robots.txt for real estate property listings and agent services
+
+User-agent: *
+Allow: /
+
+# Crawling rules
+Crawl-delay: 5
+
+# Sitemap
+Sitemap: https://afrimmo.ai/sitemap.xml
+
+# Host
+Host: https://afrimmo.ai
+
+# Allow important real estate pages
+Allow: /$
+Allow: /listings/
+Allow: /listings/search
+Allow: /agents/
+Allow: /neighborhoods/
+Allow: /market-insights/
+Allow: /property-valuator/
+Allow: /blog/
+Allow: /about/
+Allow: /contact/
+
+# Disallow private/low-value pages
+Disallow: /admin/
+Disallow: /private/
+Disallow: /cgi-bin/
+Disallow: /tmp/
+Disallow: /assets/private/
+Disallow: /api/
+Disallow: /node_modules/
+Disallow: /dist/
+Disallow: /.git/
+Disallow: /.env
+Disallow: /search-results?query= # Prevent search result pages from being indexed
+Disallow: /filter? # Prevent filtered views from being indexed
+Disallow: /compare? # Prevent property comparison pages from being indexed
+Disallow: /saved-searches/ # Private user content
+Disallow: /my-account/ # Private user content
+Disallow: /favorites/ # Private user content
+
+# Real estate specific crawling rules
+Disallow: /captcha/
+Disallow: /login/
+Disallow: /register/
+Disallow: /password-reset/
+Disallow: /unsubscribe/
+
+# Block specific bots that don't respect real estate data
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: PetalBot
+Disallow: /api/
+
+# Allow important bots to crawl efficiently
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 2
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 3
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 3
+
+User-agent: DuckDuckBot
+Allow: /
+Crawl-delay: 5
+
+# Real estate specific sitemaps
+Sitemap: https://afrimmo.ai/sitemaps/listings.xml
+Sitemap: https://afrimmo.ai/sitemaps/agents.xml
+Sitemap: https://afrimmo.ai/sitemaps/neighborhoods.xml
+Sitemap: https://afrimmo.ai/sitemaps/blog.xml

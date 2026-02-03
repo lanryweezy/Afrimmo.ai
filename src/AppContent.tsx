@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useAppContext } from './contexts/AppContext';
+import { useRealEstateSEO } from './hooks/useRealEstateSEO';
 import Header from '../components/Header';
 import BottomNavBar from '../components/BottomNavBar';
 import Today from '../components/Today';
@@ -9,7 +10,7 @@ import Marketing from '../components/Marketing';
 import Tools from '../components/Tools';
 import Settings from '../components/Settings';
 import LandingPage from '../components/LandingPage';
-import SEO from './components/SEO';
+import RealEstateSEO from './components/RealEstateSEO';
 import { Page, Lead, Listing } from '../types';
 import { scoreLead } from '../services/geminiService';
 import Sidebar from '../components/Sidebar';
@@ -82,7 +83,7 @@ const mockListingsData: Listing[] = [
 ];
 
 const AppContent: React.FC = () => {
-  useDynamicSEO(); // Add dynamic SEO hook
+  useRealEstateSEO(); // Add real estate specific SEO hook
 
   const {
     leads,
