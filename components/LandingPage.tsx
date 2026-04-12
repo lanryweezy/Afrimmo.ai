@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Button from './Button';
 import { 
     SparklesIcon, VideoIcon, MicrophoneIcon, MarketInsightsIcon, 
@@ -92,37 +92,18 @@ const FAQItem: React.FC<{ question: string; answer: string }> = ({ question, ans
 
 const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [email, setEmail] = useState('');
+    const [isSubscribed, setIsSubscribed] = useState(false);
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-    // SEO Implementation
-    useEffect(() => {
-        const originalTitle = document.title;
-        
-        // Set Title
-        document.title = "Afrimmo AI - The #1 AI Real Estate Agent for Africa";
-
-        // Helper to set meta tags
-        const setMetaTag = (name: string, content: string) => {
-            let element = document.querySelector(`meta[name="${name}"]`);
-            if (!element) {
-                element = document.createElement('meta');
-                element.setAttribute('name', name);
-                document.head.appendChild(element);
-            }
-            element.setAttribute('content', content);
-        };
-
-        // Set Description
-        setMetaTag('description', 'Afrimmo AI is the ultimate assistant for real estate agents in Africa. Automate listings, generate viral marketing content, qualify leads on WhatsApp, and access hyper-local market data.');
-
-        // Set Keywords
-        setMetaTag('keywords', 'AI real estate agent, African real estate software, property marketing automation, WhatsApp lead qualification, Lagos real estate, Nairobi real estate, Accra real estate, real estate CRM, automated property listings');
-
-        return () => {
-            document.title = originalTitle;
-        };
-    }, []);
+    const handleSubscribe = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (email) {
+            setIsSubscribed(true);
+            setEmail('');
+        }
+    };
 
     const features = [
         {
@@ -181,7 +162,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                             <a href="#how-it-works" className="text-sm font-medium text-slate-300 hover:text-white transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.5 after:bg-emerald-500 after:transition-all hover:after:w-full">How It Works</a>
                             <a href="#demo" className="text-sm font-medium text-slate-300 hover:text-white transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.5 after:bg-emerald-500 after:transition-all hover:after:w-full">Demo</a>
                             <a href="#pricing" className="text-sm font-medium text-slate-300 hover:text-white transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.5 after:bg-emerald-500 after:transition-all hover:after:w-full">Pricing</a>
-                             <a href="#faq" className="text-sm font-medium text-slate-300 hover:text-white transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.5 after:bg-emerald-500 after:transition-all hover:after:w-full">FAQ</a>
+                            <a href="#hubs" className="text-sm font-medium text-slate-300 hover:text-white transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.5 after:bg-emerald-500 after:transition-all hover:after:w-full">Markets</a>
+                            <a href="#faq" className="text-sm font-medium text-slate-300 hover:text-white transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.5 after:bg-emerald-500 after:transition-all hover:after:w-full">FAQ</a>
                             <button onClick={onLogin} className="text-sm font-bold text-white hover:text-emerald-400 transition-colors">Sign In</button>
                             <Button onClick={onLogin} size="small" className="shadow-lg shadow-emerald-500/20">Get Started Free</Button>
                         </div>
@@ -203,6 +185,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                              <a href="#how-it-works" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg">How It Works</a>
                              <a href="#demo" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg">Live Demo</a>
                             <a href="#pricing" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg">Pricing</a>
+                            <a href="#hubs" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg">Markets</a>
                             <a href="#faq" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg">FAQ</a>
                             <div className="pt-4 flex flex-col gap-3 border-t border-slate-800 mt-2">
                                 <Button onClick={onLogin} variant="secondary" className="w-full justify-center">Sign In</Button>
@@ -221,6 +204,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                         src="https://images.unsplash.com/photo-1600607686527-6fb886090705?q=80&w=2700&auto=format&fit=crop" 
                         alt="Modern Luxury Real Estate Background" 
                         className="w-full h-full object-cover opacity-60"
+                        loading="eager"
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-slate-950/90 via-slate-950/50 to-slate-950"></div>
                 </div>
@@ -230,12 +214,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/50 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-6 animate-fade-in backdrop-blur-sm shadow-lg shadow-emerald-500/10">
                         <SparklesIcon className="w-3 h-3" />
-                        The #1 AI Agent for Real Estate
+                        The #1 AI Agent for Real Estate in Africa
                     </div>
                     
                     <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-[1.1]">
-                        Supercharge Your <br className="hidden md:block" />
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-500">Real Estate Business</span>
+                        Automate Your <br className="hidden md:block" />
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-500">Real Estate Marketing</span>
                     </h1>
                     
                     <p className="mt-4 text-lg md:text-xl text-slate-200 max-w-2xl mx-auto mb-10 leading-relaxed font-light drop-shadow-md">
@@ -291,12 +275,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                             <div className="absolute inset-0 bg-slate-950 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-20 pointer-events-none"></div>
                             
                             <div className="flex justify-between items-center mb-6 relative z-10">
-                                <div>
+                                <div className="animate-fade-in-down">
                                     <h3 className="text-xl font-bold text-white tracking-tight">Command Center</h3>
-                                    <p className="text-xs text-slate-500">Welcome back, Tunde.</p>
+                                    <p className="text-xs text-slate-500">Welcome back, Tunde. You have <span className="text-emerald-400 font-bold">5 new leads</span> today.</p>
                                 </div>
                                 <div className="flex gap-3">
-                                     <div className="h-9 w-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors"><BellIcon className="w-5 h-5"/></div>
+                                     <div className="h-9 w-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors relative">
+                                        <BellIcon className="w-5 h-5"/>
+                                        <span className="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full border-2 border-slate-900"></span>
+                                     </div>
                                 </div>
                             </div>
 
@@ -313,8 +300,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                 <div className="flex-1 flex flex-col gap-4">
                                      <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex-1 backdrop-blur-sm">
                                         <div className="flex justify-between items-center mb-4">
-                                             <h4 className="font-bold text-white text-sm">Recent Activity</h4>
-                                             <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-bold uppercase tracking-wider animate-pulse">Live</span>
+                                             <h4 className="font-bold text-white text-sm">AI Agent Activity</h4>
+                                             <div className="flex items-center gap-2">
+                                                <span className="text-[10px] text-slate-400 font-medium">Autopilot:</span>
+                                                <div className="w-8 h-4 bg-emerald-500/20 rounded-full relative border border-emerald-500/30">
+                                                    <div className="absolute right-0.5 top-0.5 w-3 h-2.5 bg-emerald-500 rounded-full shadow-lg shadow-emerald-500/50"></div>
+                                                </div>
+                                                <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-bold uppercase tracking-wider animate-pulse ml-2">Live</span>
+                                             </div>
                                         </div>
                                         <div className="space-y-3">
                                             <div className="flex items-start gap-3 p-2 hover:bg-slate-800/50 rounded-lg transition-colors cursor-default">
@@ -347,9 +340,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
 
                                 {/* Right Side - Goals */}
                                 <div className="w-48 hidden md:flex flex-col gap-4">
-                                     <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex flex-col items-center justify-center flex-1 backdrop-blur-sm">
+                                     <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex flex-col items-center justify-center flex-1 backdrop-blur-sm group hover:border-emerald-500/30 transition-colors">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Monthly Goal</p>
-                                        <MockCircularProgress percentage={75} color="text-emerald-500" label="Revenue" />
+                                        <div className="transform group-hover:scale-110 transition-transform">
+                                            <MockCircularProgress percentage={75} color="text-emerald-500" label="Revenue" />
+                                        </div>
                                      </div>
                                      <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex-1 backdrop-blur-sm">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Hot Leads</p>
@@ -410,6 +405,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                         src="https://images.unsplash.com/photo-1577083552431-6e5fd01988ec?auto=format&fit=crop&q=80" 
                         alt="African City Skyline" 
                         className="w-full h-full object-cover"
+                        loading="lazy"
                     />
                     <div className="absolute inset-0 bg-slate-950/95"></div>
                 </div>
@@ -618,13 +614,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                     </div>
                                 </div>
                                 <div className="space-y-4 text-sm">
-                                    <div className="bg-slate-800 p-3 rounded-lg rounded-tl-none text-slate-300">
+                                     <div className="bg-slate-800 p-3 rounded-lg rounded-tl-none text-slate-300 animate-fade-in" style={{animationDelay: '0.5s'}}>
                                         Hello! I noticed you were looking at the 4-bed in Ikoyi. Would you like to see a video tour?
                                     </div>
-                                    <div className="bg-emerald-600 text-white p-3 rounded-lg rounded-tr-none ml-auto max-w-[85%]">
+                                     <div className="bg-emerald-600 text-white p-3 rounded-lg rounded-tr-none ml-auto max-w-[85%] animate-fade-in" style={{animationDelay: '1.5s'}}>
                                         Yes please. And what is the last price?
                                     </div>
-                                    <div className="bg-slate-800 p-3 rounded-lg rounded-tl-none text-slate-300">
+                                     <div className="bg-slate-800 p-3 rounded-lg rounded-tl-none text-slate-300 animate-fade-in" style={{animationDelay: '2.5s'}}>
                                         The asking price is ₦450M. I've sent the video above. The owner is open to negotiation for a quick close. Are you available for a viewing this Saturday?
                                     </div>
                                     <div className="flex gap-2 mt-2">
@@ -687,8 +683,47 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                 <li className="flex items-center text-slate-300 text-sm"><CheckIcon className="w-4 h-4 text-purple-500 mr-2"/> Agency Branding</li>
                                 <li className="flex items-center text-slate-300 text-sm"><CheckIcon className="w-4 h-4 text-purple-500 mr-2"/> Priority Support</li>
                             </ul>
-                            <Button variant="secondary" onClick={onLogin} className="w-full hover:border-purple-500 hover:text-purple-400">Contact Sales</Button>
+                            <Button variant="secondary" onClick={onLogin} className="w-full hover:border-purple-500 hover:text-purple-400">Contact Agency Desk</Button>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* City Hubs Section - Local SEO */}
+            <section id="hubs" className="py-24 bg-slate-950">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl font-bold text-white mb-4">Dominating Major African Markets</h2>
+                        <p className="text-slate-400">Our AI is pre-trained on the unique dynamics of Africa's fastest-growing cities.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {[
+                            {
+                                city: "Lagos, Nigeria",
+                                insights: "Handles 'Omo-onile' context, Lekki/Ikoyi market trends, and C of O verification tracking.",
+                                image: "https://images.unsplash.com/photo-1593714604578-d9e41b00c6c6?auto=format&fit=crop&q=80&w=800"
+                            },
+                            {
+                                city: "Nairobi, Kenya",
+                                insights: "Integrated with local property portals, Kileleshwa/Westlands data, and M-Pesa fee structures.",
+                                image: "https://images.unsplash.com/photo-1542128962-9d50ad7bf714?auto=format&fit=crop&q=80&w=800"
+                            },
+                            {
+                                city: "Accra, Ghana",
+                                insights: "Focus on East Legon luxury trends, dollar-indexed pricing, and land commission protocols.",
+                                image: "https://images.unsplash.com/photo-1591129841117-3adfd313e34f?auto=format&fit=crop&q=80&w=800"
+                            }
+                        ].map((hub, i) => (
+                            <div key={i} className="group relative rounded-2xl overflow-hidden aspect-[4/5] border border-white/5 shadow-2xl">
+                                <img src={hub.image} alt={hub.city} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" loading="lazy" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+                                <div className="absolute bottom-0 left-0 p-6">
+                                    <h3 className="text-2xl font-bold text-white mb-2">{hub.city}</h3>
+                                    <p className="text-slate-300 text-sm leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-300">{hub.insights}</p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>
@@ -734,10 +769,42 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                 <div className="max-w-4xl mx-auto px-4 relative z-10 text-center">
                     <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 drop-shadow-lg">Ready to transform your agency?</h2>
                     <p className="text-lg text-slate-200 mb-10 font-medium drop-shadow-md">Join 500+ agents using Afrimmo AI to sell smarter, faster, and better.</p>
-                    <Button onClick={onLogin} className="px-10 py-5 text-xl rounded-full shadow-2xl hover:scale-105 transform transition-transform border border-white/20">
-                        Create Free Account
+                    <Button onClick={onLogin} className="px-10 py-5 text-xl rounded-full shadow-2xl hover:scale-105 transform transition-transform border border-white/20 bg-emerald-600 hover:bg-emerald-500">
+                        Launch Your AI Agent Now
                     </Button>
                 </div>
+            </section>
+
+            {/* Newsletter / Waitlist Section */}
+            <section className="py-24 bg-slate-900/50 border-y border-white/5 relative overflow-hidden">
+                <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
+                    <div className="w-16 h-16 bg-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-emerald-500/20">
+                        <SparklesIcon className="w-8 h-8 text-emerald-400" />
+                    </div>
+                    <h2 className="text-3xl font-bold text-white mb-4">Join the Future of African Real Estate</h2>
+                    <p className="text-slate-400 mb-10 text-lg">Be the first to get exclusive early access and weekly market insights delivered to your inbox.</p>
+
+                    {isSubscribed ? (
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-6 animate-fade-in">
+                            <CheckIcon className="w-10 h-10 text-emerald-500 mx-auto mb-3" />
+                            <p className="text-xl font-bold text-white mb-1">You're on the list!</p>
+                            <p className="text-slate-400">We've sent a confirmation email. Stay tuned for updates.</p>
+                        </div>
+                    ) : (
+                        <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Enter your work email"
+                                required
+                                className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-4 text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                            />
+                            <Button type="submit" className="px-8 py-4">Join Waitlist</Button>
+                        </form>
+                    )}
+                </div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none -z-10"></div>
             </section>
 
             {/* Footer */}

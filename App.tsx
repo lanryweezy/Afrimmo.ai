@@ -1,18 +1,17 @@
 
 
 import React from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
 import AppContent from './src/AppContent';
 import { AppProvider } from './src/contexts/AppContext';
+import { ToastProvider } from './src/contexts/ToastContext';
 import ErrorBoundary from './src/components/ui/ErrorBoundary';
 import RealEstateSEO from './src/components/RealEstateSEO';
 
 const App: React.FC = () => {
   return (
     <ErrorBoundary>
-      <Router>
         <AppProvider>
-          <>
+          <ToastProvider>
             <RealEstateSEO
               title="Afrimmo AI - AI-Powered Real Estate Agent for Africa"
               description="Transform your real estate business with Afrimmo AI. Automated listings, viral marketing content, WhatsApp lead qualification, and more for African property markets."
@@ -75,9 +74,8 @@ const App: React.FC = () => {
               }}
             />
             <AppContent />
-          </>
+          </ToastProvider>
         </AppProvider>
-      </Router>
     </ErrorBoundary>
   );
 };
