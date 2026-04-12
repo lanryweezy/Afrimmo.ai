@@ -103,6 +103,13 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
             setSelectedLead(prev => prev ? {...prev, status: newStatus} : null);
         }
     };
+
+    const handleToggleAutopilot = (leadId: string) => {
+        setLeads(prev => prev.map(l => l.id === leadId ? { ...l, aiAutopilot: !l.aiAutopilot } : l));
+        if (selectedLead?.id === leadId) {
+            setSelectedLead(prev => prev ? { ...prev, aiAutopilot: !prev.aiAutopilot } : null);
+        }
+    };
     
     const handleNoteSave = (leadId: string, newNote: string) => {
        setLeads(prevLeads => prevLeads.map(l => l.id === leadId ? {...l, notes: newNote} : l));
@@ -133,7 +140,7 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
         });
 
         // Auto-reply logic
-        if (isUserMessage && message.sender === 'ai') {
+        if (isUserMessage) {
             const typingIndicator: ChatMessage = {
                 id: `typing-${Date.now()}`,
                 sender: 'user',
@@ -143,22 +150,74 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
             };
 
             // If it's a self-chat, the AI should respond to the user's message
-            if (leadId === 'user-self') {
+            if (leadId === 'user-self' && message.sender === 'ai') {
                  // The AI assistant responds to the agent
                  handleAiSelfReply(leadId);
-            } else {
-                // Normal client reply simulation
-                handleSendMessage(leadId, typingIndicator, false);
-                setTimeout(() => {
-                    const clientReply: ChatMessage = {
-                        id: `msg-${Date.now()}`,
-                        sender: 'user',
-                        text: "Okay, thank you for the information! When can we view?",
-                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                    };
-                    handleSendMessage(leadId, clientReply, false);
-                }, 2500);
+            } else if (leadId !== 'user-self') {
+                // Determine if we should simulate a client reply or an AI autopilot reply
+                const lead = leads.find(l => l.id === leadId);
+
+                if (message.sender === 'ai') {
+                    // Normal client reply simulation after agent sends message
+                    handleSendMessage(leadId, typingIndicator, false);
+                    setTimeout(() => {
+                        const clientReply: ChatMessage = {
+                            id: `msg-${Date.now()}`,
+                            sender: 'user',
+                            text: "Okay, thank you for the information! When can we view?",
+                            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        };
+                        handleSendMessage(leadId, clientReply, false);
+                    }, 2500);
+                } else if (message.sender === 'user' && lead?.aiAutopilot) {
+                    // AI Autopilot reply after client sends message
+                    handleAiAutopilotReply(leadId);
+                }
             }
+        }
+    };
+
+    const handleAiAutopilotReply = async (leadId: string) => {
+        const lead = leads.find(l => l.id === leadId);
+        if (!lead) return;
+
+        const typingIndicator: ChatMessage = {
+            id: `typing-autopilot-${Date.now()}`,
+            sender: 'ai',
+            text: '',
+            timestamp: '',
+            isTyping: true,
+        };
+
+        // Add typing indicator
+        setLeads(prev => prev.map(l => l.id === leadId ? { ...l, conversation: [...(l.conversation || []), typingIndicator] } : l));
+
+        try {
+            const conversationHistory = (lead.conversation || [])
+                .map(msg => `${msg.sender === 'user' ? 'Client' : 'Agent'}: ${msg.text}`)
+                .join('\n');
+
+            const { generateWhatsAppReply } = await import('../services/geminiService');
+            const replyText = await generateWhatsAppReply(conversationHistory);
+
+            const aiMessage: ChatMessage = {
+                id: `ai-msg-${Date.now()}`,
+                sender: 'ai',
+                text: replyText,
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+
+            // Replace typing indicator
+            setLeads(prev => prev.map(l => l.id === leadId ? {
+                ...l,
+                conversation: (l.conversation || []).filter(m => !m.isTyping).concat(aiMessage)
+            } : l));
+
+            if (selectedLead?.id === leadId) {
+                setSelectedLead(prev => prev ? { ...prev, conversation: (prev.conversation || []).filter(m => !m.isTyping).concat(aiMessage) } : null);
+            }
+        } catch (error) {
+            console.error("AI Autopilot failed", error);
         }
     };
 
@@ -383,7 +442,12 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
                                {activeDetailTab === 'chat' && <div className="absolute inset-0 opacity-5 pointer-events-none" style={{backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)", backgroundSize: "20px 20px"}}></div>}
 
                                 {activeDetailTab === 'chat' && selectedLead.source === 'WhatsApp' && (
-                                    <WhatsAppChat lead={selectedLead} onSendMessage={handleSendMessage} onUpdateHistory={handleUpdateLeadHistory} />
+                                    <WhatsAppChat
+                                        lead={selectedLead}
+                                        onSendMessage={handleSendMessage}
+                                        onUpdateHistory={handleUpdateLeadHistory}
+                                        onToggleAutopilot={() => handleToggleAutopilot(selectedLead.id)}
+                                    />
                                 )}
 
                                 {activeDetailTab === 'docs' && (

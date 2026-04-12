@@ -157,8 +157,26 @@ const AppContent: React.FC = () => {
         } catch (error) {
           console.error("Failed to score leads:", error);
           // Fallback to unscored leads if AI fails
-          const unscoredLeads = mockLeadsData.map(l => ({...l, history: l.history || [], notes: l.notes || '', conversation: l.conversation || []})) as Lead[];
-          setLeads(unscoredLeads);
+          const unscoredLeads = mockLeadsData.map(l => ({ ...l, history: l.history || [], notes: l.notes || '', conversation: l.conversation || [] })) as Lead[];
+
+          // Ensure self-chat lead is still added in fallback
+          const selfLead: Lead = {
+            id: 'user-self',
+            name: 'My AI Assistant (Me)',
+            status: 'Nurturing',
+            source: 'WhatsApp',
+            score: 100,
+            temperature: 'Hot',
+            justification: 'This is your personal AI workspace. Use it to test prompts, ask for advice, or just chat with your agent.',
+            nextAction: 'Ask me anything about your listings or leads!',
+            history: [{ id: 'h-self', date: 'Always active', description: 'Workspace initialized.' }],
+            notes: 'Personal AI assistant space.',
+            conversation: [
+              { id: 'c-self-1', sender: 'user', text: "Hi Tunde! I'm your Afrimmo AI assistant. You can chat with me here to test my responses or ask for help with your real estate tasks.", timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+            ]
+          };
+
+          setLeads([...unscoredLeads, selfLead]);
         } finally {
           setLoading(false);
         }

@@ -8,7 +8,7 @@ interface AppState {
   goals: AgentGoals;
   isLoading: boolean;
   isLoggedIn: boolean;
-  currentPage: string;
+  currentPage: Page;
   isFirstTime: boolean;
   isWhatsAppConnected: boolean;
 }
@@ -75,7 +75,7 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
     case 'SET_LOGIN_STATUS':
       return { ...state, isLoggedIn: action.payload };
     case 'SET_CURRENT_PAGE':
-      return { ...state, currentPage: action.payload };
+      return { ...state, currentPage: action.payload as Page };
     case 'ADD_LEAD':
       return { ...state, leads: [...state.leads, action.payload] };
     case 'ADD_LISTING':
@@ -101,7 +101,7 @@ interface AppContextType extends AppState {
   setLoading: (loading: boolean) => void;
   login: () => void;
   logout: () => void;
-  navigateTo: (page: string) => void;
+  navigateTo: (page: Page) => void;
   completeOnboarding: () => void;
   connectWhatsApp: (status: boolean) => void;
 }

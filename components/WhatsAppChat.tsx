@@ -9,9 +9,10 @@ interface WhatsAppChatProps {
   lead: Lead;
   onSendMessage: (leadId: string, message: ChatMessage, isUserMessage: boolean) => void;
   onUpdateHistory: (leadId: string, interaction: LeadInteraction) => void;
+  onToggleAutopilot?: () => void;
 }
 
-const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ lead, onSendMessage, onUpdateHistory }) => {
+const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ lead, onSendMessage, onUpdateHistory, onToggleAutopilot }) => {
   const [input, setInput] = useState('');
   const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
   const [isLoadingAction, setIsLoadingAction] = useState(false);
@@ -219,6 +220,22 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ lead, onSendMessage, onUpda
 
       {/* Input Area */}
       <div className="p-3 bg-slate-900 border-t border-slate-800">
+        {/* Autopilot Toggle */}
+        {lead.id !== 'user-self' && (
+          <div className="flex items-center justify-between mb-3 px-1">
+              <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${lead.aiAutopilot ? 'bg-emerald-500 animate-pulse' : 'bg-slate-600'}`}></div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">AI Autopilot</span>
+              </div>
+              <button
+                onClick={onToggleAutopilot}
+                className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors focus:outline-none ${lead.aiAutopilot ? 'bg-emerald-600' : 'bg-slate-700'}`}
+              >
+                  <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${lead.aiAutopilot ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+          </div>
+        )}
+
         {/* Quick Actions Toolbar */}
         {lead.id !== 'user-self' && (
           <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide">
