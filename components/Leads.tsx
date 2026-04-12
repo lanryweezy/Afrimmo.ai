@@ -77,6 +77,8 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
     const [activeDetailTab, setActiveDetailTab] = useState<DetailTab>('details');
     const [showAddLeadForm, setShowAddLeadForm] = useState(false);
     const [filter, setFilter] = useState<'All' | 'Hot'>('All');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [sourceFilter, setSourceFilter] = useState<'All' | 'WhatsApp' | 'Instagram' | 'Manual'>('All');
 
     useEffect(() => {
         if (!isLoading && leads.length > 0 && !selectedLead && window.innerWidth >= 768) {
@@ -322,7 +324,10 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
     };
 
     // Filter and Sort leads
-    const filteredLeads = (filter === 'All' ? leads : leads.filter(l => l.temperature === 'Hot'))
+    const filteredLeads = leads
+        .filter(l => filter === 'All' || l.temperature === 'Hot')
+        .filter(l => sourceFilter === 'All' || l.source === sourceFilter)
+        .filter(l => l.name.toLowerCase().includes(searchQuery.toLowerCase()) || (l.notes && l.notes.toLowerCase().includes(searchQuery.toLowerCase())))
         .sort((a, b) => (b.score || 0) - (a.score || 0));
 
     return (
@@ -332,7 +337,27 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
                     <h1 className="text-2xl font-bold text-white">Relationships</h1>
                     <p className="text-slate-400 text-xs">Manage your pipeline.</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="Search leads..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="bg-slate-900 border border-slate-800 rounded-lg py-1.5 pl-8 pr-3 text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none w-40 sm:w-64 transition-all"
+                        />
+                        <svg className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    </div>
+                    <select
+                        value={sourceFilter}
+                        onChange={(e) => setSourceFilter(e.target.value as any)}
+                        className="bg-slate-900 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white focus:ring-1 focus:ring-emerald-500 outline-none"
+                    >
+                        <option value="All">All Sources</option>
+                        <option value="WhatsApp">WhatsApp</option>
+                        <option value="Instagram">Instagram</option>
+                        <option value="Manual">Manual</option>
+                    </select>
                     <div className="flex bg-slate-900 p-1 rounded-lg border border-slate-800">
                         <button onClick={() => setFilter('All')} className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${filter === 'All' ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-white'}`}>All</button>
                         <button onClick={() => setFilter('Hot')} className={`px-3 py-1 text-xs font-medium rounded-md transition-all flex items-center gap-1 ${filter === 'Hot' ? 'bg-rose-500/20 text-rose-400' : 'text-slate-400 hover:text-white'}`}>

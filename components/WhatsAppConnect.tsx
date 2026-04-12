@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Button from './Button';
 import { WhatsAppIcon, CheckIcon, SparklesIcon } from './IconComponents';
+import { useToast } from '../src/contexts/ToastContext';
 
 interface WhatsAppConnectProps {
     onConnected: () => void;
@@ -9,6 +10,7 @@ interface WhatsAppConnectProps {
 
 const WhatsAppConnect: React.FC<WhatsAppConnectProps> = ({ onConnected }) => {
     const [step, setStep] = useState<'initial' | 'qr' | 'connecting' | 'success'>('initial');
+    const { showToast } = useToast();
 
     const startConnection = () => {
         setStep('qr');
@@ -18,6 +20,7 @@ const WhatsAppConnect: React.FC<WhatsAppConnectProps> = ({ onConnected }) => {
         setStep('connecting');
         setTimeout(() => {
             setStep('success');
+            showToast("WhatsApp connected successfully!", "success");
             setTimeout(() => {
                 onConnected();
             }, 2000);

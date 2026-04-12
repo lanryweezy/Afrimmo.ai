@@ -6,6 +6,7 @@ import Button from './Button';
 import { Page, Lead, Listing, AgentGoals } from '../types';
 import { ListingsIcon, LeadsIcon, PropertyValuatorIcon, WhatsAppIcon, SendIcon, PlusIcon, TrashIcon, CheckIcon, BellIcon, TargetIcon, MoneyIcon, SparklesIcon, VideoIcon } from './IconComponents';
 import { useAppContext } from '../src/contexts/AppContext';
+import { useToast } from '../src/contexts/ToastContext';
 
 interface TodayProps {
     setActivePage: (page: Page) => void;
@@ -71,6 +72,7 @@ const CircularProgress: React.FC<{ percentage: number, label: string, value: str
 
 const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings, goals }) => {
   const { isWhatsAppConnected, onboardingProgress, updateOnboardingProgress } = useAppContext();
+  const { showToast } = useToast();
   const activeListingsCount = listings.filter(l => l.status === 'Available').length;
   const newLeadsCount = leads.filter(l => l.status === 'New').length;
   const hotLeadsCount = leads.filter(l => l.temperature === 'Hot').length;
@@ -94,12 +96,6 @@ const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings, goals }) 
       { id: '3', text: 'Follow-up Call: Chinedu', time: '04:30 PM', completed: false, reminder: false },
   ]);
   const [newTask, setNewTask] = useState('');
-  const [notification, setNotification] = useState<string | null>(null);
-
-  const showNotification = (msg: string) => {
-    setNotification(msg);
-    setTimeout(() => setNotification(null), 3000);
-  };
 
   const addTask = (e: React.FormEvent) => {
       e.preventDefault();
@@ -130,7 +126,7 @@ const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings, goals }) 
           if (t.id === id) {
               const newReminderState = !t.reminder;
               if (newReminderState) {
-                  showNotification(`Reminder set for "${t.text}"`);
+                  showToast(`Reminder set for "${t.text}"`, 'info');
               }
               return { ...t, reminder: newReminderState };
           }
@@ -142,17 +138,6 @@ const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings, goals }) 
 
   return (
     <div className="space-y-8 animate-fade-in max-w-7xl mx-auto relative">
-      {/* Notification Toast */}
-      {notification && (
-        <div className="fixed top-24 right-4 z-50 animate-fade-in">
-            <div className="bg-emerald-500 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-2">
-                <div className="bg-white/20 p-1 rounded-full">
-                    <BellIcon className="w-4 h-4" />
-                </div>
-                <p className="text-sm font-medium">{notification}</p>
-            </div>
-        </div>
-      )}
       
       {/* Welcome Section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
