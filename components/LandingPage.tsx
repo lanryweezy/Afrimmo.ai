@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Button from './Button';
 import { 
     SparklesIcon, VideoIcon, MicrophoneIcon, MarketInsightsIcon, 
@@ -94,35 +94,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-
-    // SEO Implementation
-    useEffect(() => {
-        const originalTitle = document.title;
-        
-        // Set Title
-        document.title = "Afrimmo AI - The #1 AI Real Estate Agent for Africa";
-
-        // Helper to set meta tags
-        const setMetaTag = (name: string, content: string) => {
-            let element = document.querySelector(`meta[name="${name}"]`);
-            if (!element) {
-                element = document.createElement('meta');
-                element.setAttribute('name', name);
-                document.head.appendChild(element);
-            }
-            element.setAttribute('content', content);
-        };
-
-        // Set Description
-        setMetaTag('description', 'Afrimmo AI is the ultimate assistant for real estate agents in Africa. Automate listings, generate viral marketing content, qualify leads on WhatsApp, and access hyper-local market data.');
-
-        // Set Keywords
-        setMetaTag('keywords', 'AI real estate agent, African real estate software, property marketing automation, WhatsApp lead qualification, Lagos real estate, Nairobi real estate, Accra real estate, real estate CRM, automated property listings');
-
-        return () => {
-            document.title = originalTitle;
-        };
-    }, []);
 
     const features = [
         {
@@ -230,12 +201,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/50 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-6 animate-fade-in backdrop-blur-sm shadow-lg shadow-emerald-500/10">
                         <SparklesIcon className="w-3 h-3" />
-                        The #1 AI Agent for Real Estate
+                        The #1 AI Agent for Real Estate in Africa
                     </div>
                     
                     <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-[1.1]">
-                        Supercharge Your <br className="hidden md:block" />
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-500">Real Estate Business</span>
+                        Automate Your <br className="hidden md:block" />
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-500">Real Estate Marketing</span>
                     </h1>
                     
                     <p className="mt-4 text-lg md:text-xl text-slate-200 max-w-2xl mx-auto mb-10 leading-relaxed font-light drop-shadow-md">
@@ -291,12 +262,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                             <div className="absolute inset-0 bg-slate-950 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-20 pointer-events-none"></div>
                             
                             <div className="flex justify-between items-center mb-6 relative z-10">
-                                <div>
+                                <div className="animate-fade-in-down">
                                     <h3 className="text-xl font-bold text-white tracking-tight">Command Center</h3>
-                                    <p className="text-xs text-slate-500">Welcome back, Tunde.</p>
+                                    <p className="text-xs text-slate-500">Welcome back, Tunde. You have <span className="text-emerald-400 font-bold">5 new leads</span> today.</p>
                                 </div>
                                 <div className="flex gap-3">
-                                     <div className="h-9 w-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors"><BellIcon className="w-5 h-5"/></div>
+                                     <div className="h-9 w-9 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors relative">
+                                        <BellIcon className="w-5 h-5"/>
+                                        <span className="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full border-2 border-slate-900"></span>
+                                     </div>
                                 </div>
                             </div>
 
@@ -313,8 +287,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                 <div className="flex-1 flex flex-col gap-4">
                                      <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex-1 backdrop-blur-sm">
                                         <div className="flex justify-between items-center mb-4">
-                                             <h4 className="font-bold text-white text-sm">Recent Activity</h4>
-                                             <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-bold uppercase tracking-wider animate-pulse">Live</span>
+                                             <h4 className="font-bold text-white text-sm">AI Agent Activity</h4>
+                                             <div className="flex items-center gap-2">
+                                                <span className="text-[10px] text-slate-400 font-medium">Autopilot:</span>
+                                                <div className="w-8 h-4 bg-emerald-500/20 rounded-full relative border border-emerald-500/30">
+                                                    <div className="absolute right-0.5 top-0.5 w-3 h-2.5 bg-emerald-500 rounded-full shadow-lg shadow-emerald-500/50"></div>
+                                                </div>
+                                                <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-bold uppercase tracking-wider animate-pulse ml-2">Live</span>
+                                             </div>
                                         </div>
                                         <div className="space-y-3">
                                             <div className="flex items-start gap-3 p-2 hover:bg-slate-800/50 rounded-lg transition-colors cursor-default">
@@ -347,9 +327,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
 
                                 {/* Right Side - Goals */}
                                 <div className="w-48 hidden md:flex flex-col gap-4">
-                                     <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex flex-col items-center justify-center flex-1 backdrop-blur-sm">
+                                     <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex flex-col items-center justify-center flex-1 backdrop-blur-sm group hover:border-emerald-500/30 transition-colors">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Monthly Goal</p>
-                                        <MockCircularProgress percentage={75} color="text-emerald-500" label="Revenue" />
+                                        <div className="transform group-hover:scale-110 transition-transform">
+                                            <MockCircularProgress percentage={75} color="text-emerald-500" label="Revenue" />
+                                        </div>
                                      </div>
                                      <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 flex-1 backdrop-blur-sm">
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Hot Leads</p>
@@ -618,13 +600,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                                     </div>
                                 </div>
                                 <div className="space-y-4 text-sm">
-                                    <div className="bg-slate-800 p-3 rounded-lg rounded-tl-none text-slate-300">
+                                     <div className="bg-slate-800 p-3 rounded-lg rounded-tl-none text-slate-300 animate-fade-in" style={{animationDelay: '0.5s'}}>
                                         Hello! I noticed you were looking at the 4-bed in Ikoyi. Would you like to see a video tour?
                                     </div>
-                                    <div className="bg-emerald-600 text-white p-3 rounded-lg rounded-tr-none ml-auto max-w-[85%]">
+                                     <div className="bg-emerald-600 text-white p-3 rounded-lg rounded-tr-none ml-auto max-w-[85%] animate-fade-in" style={{animationDelay: '1.5s'}}>
                                         Yes please. And what is the last price?
                                     </div>
-                                    <div className="bg-slate-800 p-3 rounded-lg rounded-tl-none text-slate-300">
+                                     <div className="bg-slate-800 p-3 rounded-lg rounded-tl-none text-slate-300 animate-fade-in" style={{animationDelay: '2.5s'}}>
                                         The asking price is ₦450M. I've sent the video above. The owner is open to negotiation for a quick close. Are you available for a viewing this Saturday?
                                     </div>
                                     <div className="flex gap-2 mt-2">

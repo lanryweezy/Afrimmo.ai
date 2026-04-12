@@ -1,7 +1,6 @@
 
 
 import React from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
 import AppContent from './src/AppContent';
 import { AppProvider } from './src/contexts/AppContext';
 import ErrorBoundary from './src/components/ui/ErrorBoundary';
@@ -10,7 +9,6 @@ import RealEstateSEO from './src/components/RealEstateSEO';
 const App: React.FC = () => {
   return (
     <ErrorBoundary>
-      <Router>
         <AppProvider>
           <>
             <RealEstateSEO
@@ -77,7 +75,6 @@ const App: React.FC = () => {
             <AppContent />
           </>
         </AppProvider>
-      </Router>
     </ErrorBoundary>
   );
 };

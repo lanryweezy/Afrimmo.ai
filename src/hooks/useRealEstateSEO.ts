@@ -13,24 +13,21 @@ const realEstatePageSEOData: Record<string, {
   propertyType?: string;
 }> = {
   '/': {
-    title: 'Afrimmo AI - AI-Powered Real Estate Agent for Africa',
-    description: 'Transform your real estate business with Afrimmo AI. Automated listings, viral marketing content, WhatsApp lead qualification, and more for African property markets.',
+    title: 'Afrimmo AI - The #1 AI Real Estate Agent for Africa',
+    description: 'Afrimmo AI is the ultimate assistant for real estate agents in Africa. Automate property listings, generate viral AI video tours, qualify leads on WhatsApp 24/7, and access hyper-local market data for Lagos, Nairobi, and Accra.',
     keywords: [
-      'real estate agent',
-      'property management',
-      'real estate marketing',
-      'WhatsApp automation',
-      'property listings',
-      'African real estate',
-      'real estate agent tools',
+      'AI real estate agent Africa',
       'property marketing automation',
-      'real estate CRM',
-      'property valuation',
-      'real estate leads',
-      'property search',
-      'real estate technology',
-      'AI real estate',
-      'real estate automation'
+      'WhatsApp lead qualification',
+      'African real estate software',
+      'Lagos real estate AI',
+      'Nairobi property marketing',
+      'Accra real estate tools',
+      'real estate CRM Nigeria',
+      'automated property listings',
+      'AI video tours for real estate',
+      'real estate social media automation',
+      'African property market data'
     ]
   },
   '/today': {

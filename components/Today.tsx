@@ -87,6 +87,8 @@ const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings, goals }) 
   const revenuePercentage = Math.min(100, Math.round((currentRevenue / revenueTarget) * 100));
   const dealsPercentage = Math.min(100, Math.round((closedDeals / dealsTarget) * 100));
 
+  const [hasCreatedVideo, setHasCreatedVideo] = useState(false);
+
   // Task State
   const [tasks, setTasks] = useState<Task[]>([
       { id: '1', text: 'Viewing: 4-Bed Duplex', time: '11:00 AM', completed: false, reminder: true },
@@ -184,8 +186,11 @@ const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings, goals }) 
                   <ChecklistItem
                     title="Create AI Video"
                     description="Turn photos into viral tours."
-                    completed={false}
-                    onClick={() => setActivePage('marketing')}
+                    completed={hasCreatedVideo}
+                    onClick={() => {
+                        setHasCreatedVideo(true);
+                        setActivePage('marketing');
+                    }}
                     icon={<VideoIcon className="w-5 h-5" />}
                   />
                   <ChecklistItem

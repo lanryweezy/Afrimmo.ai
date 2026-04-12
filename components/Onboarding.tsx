@@ -19,7 +19,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, connectWhatsApp, li
     const steps = [
         {
             title: "Welcome to Afrimmo AI",
-            description: "Let's get you set up with your new AI-powered real estate assistant.",
+            description: "Your new AI-powered real estate assistant is ready to help you close more deals.",
             icon: <SparklesIcon className="w-12 h-12 text-emerald-400" />,
             color: "emerald"
         },
@@ -64,9 +64,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, connectWhatsApp, li
     const handleWhatsAppConnected = () => {
         setIsWhatsAppConnected(true);
         connectWhatsApp(true);
-        setTimeout(() => {
-            nextStep();
-        }, 1500);
+        // Show success for a bit longer
     };
 
     const currentStep = steps[step];
@@ -92,7 +90,20 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete, connectWhatsApp, li
                     <div className="absolute top-0 right-0 p-24 opacity-5 rounded-full -mr-12 -mt-12 bg-emerald-500"></div>
 
                     {currentStep.isWhatsAppStep ? (
-                        <WhatsAppConnect onConnected={handleWhatsAppConnected} />
+                        <div className="animate-fade-in">
+                            {isWhatsAppConnected ? (
+                                <div className="text-center py-12">
+                                    <div className="w-20 h-20 bg-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <CheckIcon className="w-10 h-10" />
+                                    </div>
+                                    <h2 className="text-2xl font-bold text-white mb-2">WhatsApp Connected!</h2>
+                                    <p className="text-slate-400 mb-8">Your AI assistant is now ready to chat.</p>
+                                    <Button onClick={nextStep}>Continue</Button>
+                                </div>
+                            ) : (
+                                <WhatsAppConnect onConnected={handleWhatsAppConnected} />
+                            )}
+                        </div>
                     ) : currentStep.isVideoStep ? (
                         <OnboardingVideoStep listings={listings} onComplete={nextStep} />
                     ) : (
