@@ -35,24 +35,36 @@ type AppAction =
   | { type: 'UPDATE_ONBOARDING_PROGRESS'; payload: Partial<AppState['onboardingProgress']> }
   | { type: 'CONNECT_WHATSAPP'; payload: boolean };
 
-// Initial state
-const initialState: AppState = {
-  leads: [],
-  listings: [],
-  goals: {
-    monthlyRevenueTarget: 100000000,
-    dealsTarget: 3
-  },
-  isLoading: false,
-  isLoggedIn: false,
-  currentPage: 'today',
-  isFirstTime: true,
-  isWhatsAppConnected: false,
-  onboardingProgress: {
-    videoCreated: false,
-    aiChatTested: false,
-  },
+// Initial state helper
+const getInitialState = (): AppState => {
+  const savedState = localStorage.getItem('afrimmo_state');
+  if (savedState) {
+    try {
+      return JSON.parse(savedState);
+    } catch (e) {
+      console.error("Failed to parse saved state", e);
+    }
+  }
+  return {
+    leads: [],
+    listings: [],
+    goals: {
+      monthlyRevenueTarget: 100000000,
+      dealsTarget: 3
+    },
+    isLoading: false,
+    isLoggedIn: false,
+    currentPage: 'today',
+    isFirstTime: true,
+    isWhatsAppConnected: false,
+    onboardingProgress: {
+      videoCreated: false,
+      aiChatTested: false,
+    },
+  };
 };
+
+const initialState: AppState = getInitialState();
 
 // Reducer function
 const appReducer = (state: AppState, action: AppAction): AppState => {
@@ -127,6 +139,11 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 // Provider component
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
+
+  // Persistence effect
+  React.useEffect(() => {
+    localStorage.setItem('afrimmo_state', JSON.stringify(state));
+  }, [state]);
 
   // Helper functions
   const addLead = (lead: Lead) => {

@@ -6,6 +6,8 @@ import { Lead, LeadStatus, ChatMessage, LeadInteraction } from '../types';
 import { FireIcon, SparklesIcon, HistoryIcon, NoteIcon, LeadsIcon, ChatBubbleLeftRightIcon, WhatsAppIcon, CheckIcon, DocumentTextIcon } from './IconComponents';
 import WhatsAppChat from './WhatsAppChat';
 import DealDocs from './DealDocs';
+import LeadListItem from './leads/LeadListItem';
+import LeadAIInsight from './leads/LeadAIInsight';
 import { scoreLead } from '../services/geminiService';
 
 type DetailTab = 'details' | 'chat' | 'docs';
@@ -355,40 +357,12 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
                             {isLoading && <div className="p-4 text-center"><div className="animate-spin w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-2"></div><p className="text-xs text-slate-500">Analyzing pipeline...</p></div>}
                             
                             {!isLoading && filteredLeads.map(lead => (
-                                <button key={lead.id} onClick={() => handleSelectLead(lead)} className={`w-full text-left p-3 rounded-xl transition-all border ${selectedLead?.id === lead.id ? 'bg-emerald-500/10 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'bg-slate-900/40 border-transparent hover:bg-slate-800/60 hover:border-slate-700'}`}>
-                                    <div className="flex justify-between items-start mb-1.5">
-                                        <div className="flex items-center gap-2 min-w-0">
-                                             <div className="relative">
-                                                <img src={`https://i.pravatar.cc/150?u=${lead.id}`} className="w-10 h-10 rounded-full border border-slate-700" alt="" />
-                                                {lead.source === 'WhatsApp' && <div className="absolute -bottom-1 -right-1 bg-slate-950 rounded-full p-0.5"><WhatsAppIcon className="w-3.5 h-3.5 text-green-500"/></div>}
-                                            </div>
-                                            <div className="min-w-0">
-                                                <p className={`font-semibold text-sm truncate ${selectedLead?.id === lead.id ? 'text-white' : 'text-slate-200'}`}>{lead.name}</p>
-                                                <p className="text-[10px] text-slate-500 truncate">{lead.history[0]?.date}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                             {lead.temperature === 'Hot' && <FireIcon className="w-3 h-3 text-rose-500" />}
-                                             {lead.score !== undefined && (
-                                                <div className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${lead.score > 75 ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : lead.score > 40 ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'}`}>
-                                                    {lead.score}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="pl-12">
-                                        <p className="text-xs text-slate-400 truncate line-clamp-1">
-                                            {lead.source === 'WhatsApp' && lead.conversation && lead.conversation.length > 0 
-                                                ? <span className="italic text-slate-500">{lead.conversation[lead.conversation.length - 1].text}</span> 
-                                                : (lead.notes || 'No notes available')}
-                                        </p>
-                                        <div className="mt-2 flex items-center gap-2">
-                                             <span className={`w-2 h-2 rounded-full ${statusConfig[lead.status].color.split(' ')[0].replace('/10', '')}`}></span>
-                                             <span className="text-[10px] text-slate-500">{statusConfig[lead.status].label}</span>
-                                        </div>
-                                    </div>
-                                </button>
+                                <LeadListItem
+                                    key={lead.id}
+                                    lead={lead}
+                                    isSelected={selectedLead?.id === lead.id}
+                                    onClick={() => handleSelectLead(lead)}
+                                />
                             ))}
                         </div>
                     </Card>
@@ -459,17 +433,10 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
                                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                             {/* AI Insight Card */}
                                             <div className="lg:col-span-2">
-                                                <div className="bg-gradient-to-br from-emerald-900/20 to-slate-900 border border-emerald-500/20 rounded-xl p-5 mb-6 shadow-lg shadow-emerald-900/10">
-                                                    <h3 className="text-sm font-bold text-emerald-400 mb-3 flex items-center uppercase tracking-wider"><SparklesIcon className="w-4 h-4 mr-2"/> AI Lead Analysis</h3>
-                                                    <p className="text-slate-300 text-sm leading-relaxed mb-4">{selectedLead.justification || "Insufficient data for analysis."}</p>
-                                                    <div className="bg-slate-950/50 p-3 rounded-lg border border-emerald-500/10 flex items-start gap-3">
-                                                        <div className="mt-0.5 text-emerald-500"><CheckIcon className="w-4 h-4"/></div>
-                                                        <div>
-                                                            <p className="text-[10px] text-slate-500 font-bold uppercase">Recommended Action</p>
-                                                            <p className="text-white text-sm font-medium">{selectedLead.nextAction || "Gather more requirements."}</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                                <LeadAIInsight
+                                                    justification={selectedLead.justification || ''}
+                                                    nextAction={selectedLead.nextAction || ''}
+                                                />
 
                                                 <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-5">
                                                     <h3 className="text-sm font-bold text-white mb-4 flex items-center"><NoteIcon className="w-4 h-4 mr-2 text-slate-400"/> Notes & Requirements</h3>
