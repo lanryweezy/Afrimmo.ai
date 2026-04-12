@@ -186,9 +186,9 @@ const AddListingWizard: React.FC<AddListingWizardProps> = ({ onClose, onPublish 
                                 <p className="text-slate-400 text-sm">Your listing is ready for all platforms.</p>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden">
                                 {/* Video Preview */}
-                                <div>
+                                <div className="min-h-[400px] md:h-auto">
                                     <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Generated Video Tour</label>
                                     <div className="aspect-[9/16] bg-black rounded-lg overflow-hidden relative shadow-lg border border-slate-700">
                                         {videoUrl ? (

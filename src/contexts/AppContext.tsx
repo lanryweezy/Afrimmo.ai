@@ -11,6 +11,10 @@ interface AppState {
   currentPage: Page;
   isFirstTime: boolean;
   isWhatsAppConnected: boolean;
+  onboardingProgress: {
+    videoCreated: boolean;
+    aiChatTested: boolean;
+  };
 }
 
 // Define action types
@@ -27,6 +31,8 @@ type AppAction =
   | { type: 'ADD_LEAD'; payload: Lead }
   | { type: 'ADD_LISTING'; payload: Listing }
   | { type: 'COMPLETE_ONBOARDING' }
+  | { type: 'RESTART_ONBOARDING' }
+  | { type: 'UPDATE_ONBOARDING_PROGRESS'; payload: Partial<AppState['onboardingProgress']> }
   | { type: 'CONNECT_WHATSAPP'; payload: boolean };
 
 // Initial state
@@ -42,6 +48,10 @@ const initialState: AppState = {
   currentPage: 'today',
   isFirstTime: true,
   isWhatsAppConnected: false,
+  onboardingProgress: {
+    videoCreated: false,
+    aiChatTested: false,
+  },
 };
 
 // Reducer function
@@ -82,6 +92,10 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
       return { ...state, listings: [...state.listings, action.payload] };
     case 'COMPLETE_ONBOARDING':
       return { ...state, isFirstTime: false };
+    case 'RESTART_ONBOARDING':
+      return { ...state, isFirstTime: true, onboardingProgress: { videoCreated: false, aiChatTested: false }, isWhatsAppConnected: false };
+    case 'UPDATE_ONBOARDING_PROGRESS':
+      return { ...state, onboardingProgress: { ...state.onboardingProgress, ...action.payload } };
     case 'CONNECT_WHATSAPP':
       return { ...state, isWhatsAppConnected: action.payload };
     default:
@@ -103,6 +117,8 @@ interface AppContextType extends AppState {
   logout: () => void;
   navigateTo: (page: Page) => void;
   completeOnboarding: () => void;
+  restartOnboarding: () => void;
+  updateOnboardingProgress: (progress: Partial<AppState['onboardingProgress']>) => void;
   connectWhatsApp: (status: boolean) => void;
 }
 
@@ -161,6 +177,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     dispatch({ type: 'COMPLETE_ONBOARDING' });
   };
 
+  const restartOnboarding = () => {
+    dispatch({ type: 'RESTART_ONBOARDING' });
+  };
+
+  const updateOnboardingProgress = (progress: Partial<AppState['onboardingProgress']>) => {
+    dispatch({ type: 'UPDATE_ONBOARDING_PROGRESS', payload: progress });
+  };
+
   const connectWhatsApp = (status: boolean) => {
     dispatch({ type: 'CONNECT_WHATSAPP', payload: status });
   };
@@ -179,6 +203,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     logout,
     navigateTo,
     completeOnboarding,
+    restartOnboarding,
+    updateOnboardingProgress,
     connectWhatsApp,
   };
 

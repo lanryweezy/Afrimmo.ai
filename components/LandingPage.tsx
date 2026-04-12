@@ -162,7 +162,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                             <a href="#how-it-works" className="text-sm font-medium text-slate-300 hover:text-white transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.5 after:bg-emerald-500 after:transition-all hover:after:w-full">How It Works</a>
                             <a href="#demo" className="text-sm font-medium text-slate-300 hover:text-white transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.5 after:bg-emerald-500 after:transition-all hover:after:w-full">Demo</a>
                             <a href="#pricing" className="text-sm font-medium text-slate-300 hover:text-white transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.5 after:bg-emerald-500 after:transition-all hover:after:w-full">Pricing</a>
-                             <a href="#faq" className="text-sm font-medium text-slate-300 hover:text-white transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.5 after:bg-emerald-500 after:transition-all hover:after:w-full">FAQ</a>
+                            <a href="#hubs" className="text-sm font-medium text-slate-300 hover:text-white transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.5 after:bg-emerald-500 after:transition-all hover:after:w-full">Markets</a>
+                            <a href="#faq" className="text-sm font-medium text-slate-300 hover:text-white transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-0 after:h-0.5 after:bg-emerald-500 after:transition-all hover:after:w-full">FAQ</a>
                             <button onClick={onLogin} className="text-sm font-bold text-white hover:text-emerald-400 transition-colors">Sign In</button>
                             <Button onClick={onLogin} size="small" className="shadow-lg shadow-emerald-500/20">Get Started Free</Button>
                         </div>
@@ -184,6 +185,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
                              <a href="#how-it-works" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg">How It Works</a>
                              <a href="#demo" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg">Live Demo</a>
                             <a href="#pricing" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg">Pricing</a>
+                            <a href="#hubs" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg">Markets</a>
                             <a href="#faq" onClick={() => setIsMenuOpen(false)} className="block px-3 py-3 text-base font-medium text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg">FAQ</a>
                             <div className="pt-4 flex flex-col gap-3 border-t border-slate-800 mt-2">
                                 <Button onClick={onLogin} variant="secondary" className="w-full justify-center">Sign In</Button>
@@ -688,7 +690,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
             </section>
 
             {/* City Hubs Section - Local SEO */}
-            <section className="py-24 bg-slate-950">
+            <section id="hubs" className="py-24 bg-slate-950">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl font-bold text-white mb-4">Dominating Major African Markets</h2>

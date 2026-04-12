@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useAppContext } from '../contexts/AppContext';
 
 // SEO data for different pages
 const pageSEOData: Record<string, {
@@ -49,10 +49,10 @@ const pageSEOData: Record<string, {
 };
 
 export const useDynamicSEO = () => {
-  const location = useLocation();
+  const { currentPage } = useAppContext();
 
   useEffect(() => {
-    const path = location.pathname;
+    const path = currentPage === 'today' ? '/' : `/${currentPage}`;
     const seoData = pageSEOData[path] || pageSEOData['/'];
 
     // Update title
@@ -102,5 +102,5 @@ export const useDynamicSEO = () => {
       newCanonical.setAttribute('href', `https://afrimmo.ai${path}`);
       document.head.appendChild(newCanonical);
     }
-  }, [location]);
+  }, [currentPage]);
 };

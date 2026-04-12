@@ -70,7 +70,7 @@ const CircularProgress: React.FC<{ percentage: number, label: string, value: str
 }
 
 const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings, goals }) => {
-  const { isWhatsAppConnected } = useAppContext();
+  const { isWhatsAppConnected, onboardingProgress, updateOnboardingProgress } = useAppContext();
   const activeListingsCount = listings.filter(l => l.status === 'Available').length;
   const newLeadsCount = leads.filter(l => l.status === 'New').length;
   const hotLeadsCount = leads.filter(l => l.temperature === 'Hot').length;
@@ -86,8 +86,6 @@ const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings, goals }) 
 
   const revenuePercentage = Math.min(100, Math.round((currentRevenue / revenueTarget) * 100));
   const dealsPercentage = Math.min(100, Math.round((closedDeals / dealsTarget) * 100));
-
-  const [hasCreatedVideo, setHasCreatedVideo] = useState(false);
 
   // Task State
   const [tasks, setTasks] = useState<Task[]>([
@@ -162,9 +160,9 @@ const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings, goals }) 
             <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">Hello, <span className="text-emerald-400">Tunde</span> 👋</h1>
             <p className="text-slate-400 mt-2">Here is your daily briefing for the Lagos market.</p>
         </div>
-        <div className="flex gap-2">
-            <Button variant="secondary" size="small" onClick={() => setActivePage('listings')}>+ Listing</Button>
-            <Button onClick={() => setActivePage('leads')} size="small">+ Lead</Button>
+        <div className="flex gap-2 w-full md:w-auto mt-4 md:mt-0">
+            <Button variant="secondary" size="small" onClick={() => setActivePage('listings')} className="flex-1 md:flex-none justify-center">+ Listing</Button>
+            <Button onClick={() => setActivePage('leads')} size="small" className="flex-1 md:flex-none justify-center">+ Lead</Button>
         </div>
       </div>
 
@@ -186,9 +184,9 @@ const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings, goals }) 
                   <ChecklistItem
                     title="Create AI Video"
                     description="Turn photos into viral tours."
-                    completed={hasCreatedVideo}
+                    completed={onboardingProgress.videoCreated}
                     onClick={() => {
-                        setHasCreatedVideo(true);
+                        updateOnboardingProgress({ videoCreated: true });
                         setActivePage('marketing');
                     }}
                     icon={<VideoIcon className="w-5 h-5" />}
@@ -196,13 +194,30 @@ const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings, goals }) 
                   <ChecklistItem
                     title="Chat with your AI"
                     description="Try the 'My AI Assistant' lead."
-                    completed={leads.some(l => l.id === 'user-self' && (l.conversation?.length || 0) > 1)}
-                    onClick={() => setActivePage('leads')}
+                    completed={onboardingProgress.aiChatTested || leads.some(l => l.id === 'user-self' && (l.conversation?.length || 0) > 1)}
+                    onClick={() => {
+                        updateOnboardingProgress({ aiChatTested: true });
+                        setActivePage('leads');
+                    }}
                     icon={<LeadsIcon className="w-5 h-5" />}
                   />
               </div>
           </Card>
       )}
+
+      {/* AI Market Pulse */}
+      <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-emerald-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+                <SparklesIcon className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div>
+                <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Market Pulse</p>
+                <p className="text-sm text-slate-200 font-medium">Demand for 2-bed rentals in Lekki Phase 1 is up <span className="text-emerald-400">12%</span> this week. Consider adjusting your listing prices.</p>
+            </div>
+        </div>
+        <Button variant="secondary" size="small" className="whitespace-nowrap bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20">View Insights</Button>
+      </div>
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

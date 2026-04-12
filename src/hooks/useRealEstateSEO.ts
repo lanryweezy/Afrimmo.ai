@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useAppContext } from '../contexts/AppContext';
 
 // Real estate specific SEO data for different pages
 const realEstatePageSEOData: Record<string, {
@@ -169,10 +169,11 @@ const realEstateActions = [
 ];
 
 export const useRealEstateSEO = () => {
-  const location = useLocation();
+  const { currentPage } = useAppContext();
 
   useEffect(() => {
-    const path = location.pathname;
+    // Map internal page state to virtual SEO paths
+    const path = currentPage === 'today' ? '/' : `/${currentPage}`;
     const seoData = realEstatePageSEOData[path] || realEstatePageSEOData['/'];
 
     // Combine with African city and property keywords
@@ -260,5 +261,5 @@ export const useRealEstateSEO = () => {
       });
       document.head.appendChild(propertySchema);
     }
-  }, [location]);
+  }, [currentPage]);
 };
