@@ -132,6 +132,7 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
             return updatedLeads;
         });
 
+        // Auto-reply logic
         if (isUserMessage && message.sender === 'ai') {
             const typingIndicator: ChatMessage = {
                 id: `typing-${Date.now()}`,
@@ -140,17 +141,70 @@ const Leads: React.FC<LeadsProps> = ({ leads, setLeads, isLoading }) => {
                 timestamp: '',
                 isTyping: true,
             };
-            handleSendMessage(leadId, typingIndicator, false);
 
-            setTimeout(() => {
-                const clientReply: ChatMessage = {
-                    id: `msg-${Date.now()}`,
-                    sender: 'user',
-                    text: "Okay, thank you for the information! When can we view?",
-                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                };
-                handleSendMessage(leadId, clientReply, false);
-            }, 2500);
+            // If it's a self-chat, the AI should respond to the user's message
+            if (leadId === 'user-self') {
+                 // The AI assistant responds to the agent
+                 handleAiSelfReply(leadId);
+            } else {
+                // Normal client reply simulation
+                handleSendMessage(leadId, typingIndicator, false);
+                setTimeout(() => {
+                    const clientReply: ChatMessage = {
+                        id: `msg-${Date.now()}`,
+                        sender: 'user',
+                        text: "Okay, thank you for the information! When can we view?",
+                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    };
+                    handleSendMessage(leadId, clientReply, false);
+                }, 2500);
+            }
+        }
+    };
+
+    const handleAiSelfReply = async (leadId: string) => {
+        // Find the lead to get current conversation context
+        const lead = leads.find(l => l.id === leadId);
+        if (!lead) return;
+
+        const typingIndicator: ChatMessage = {
+            id: `typing-ai-${Date.now()}`,
+            sender: 'user', // Shows on left in self-chat
+            text: '',
+            timestamp: '',
+            isTyping: true,
+        };
+
+        // Add typing indicator
+        setLeads(prev => prev.map(l => l.id === leadId ? { ...l, conversation: [...(l.conversation || []), typingIndicator] } : l));
+
+        try {
+            const conversationHistory = (lead.conversation || [])
+                .map(msg => `${msg.sender === 'user' ? 'AI Assistant' : 'Agent'}: ${msg.text}`)
+                .join('\n');
+
+            const { generateAssistantResponse } = await import('../services/geminiService');
+            const replyText = await generateAssistantResponse(conversationHistory);
+
+            const aiMessage: ChatMessage = {
+                id: `ai-msg-${Date.now()}`,
+                sender: 'user', // Shows on left in self-chat
+                text: replyText,
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+
+            // Replace typing indicator with real message
+            setLeads(prev => prev.map(l => l.id === leadId ? {
+                ...l,
+                conversation: (l.conversation || []).filter(m => !m.isTyping).concat(aiMessage)
+            } : l));
+
+            if (selectedLead?.id === leadId) {
+                setSelectedLead(prev => prev ? { ...prev, conversation: (prev.conversation || []).filter(m => !m.isTyping).concat(aiMessage) } : null);
+            }
+
+        } catch (error) {
+            console.error("Self-chat AI failed", error);
         }
     };
     

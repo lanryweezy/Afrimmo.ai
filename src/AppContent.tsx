@@ -10,8 +10,9 @@ import Marketing from '../components/Marketing';
 import Tools from '../components/Tools';
 import Settings from '../components/Settings';
 import LandingPage from '../components/LandingPage';
+import Onboarding from '../components/Onboarding';
 import RealEstateSEO from './components/RealEstateSEO';
-import { Page, Lead, Listing } from '../types';
+import { Page, Lead, Listing, ChatMessage } from '../types';
 import { scoreLead } from '../services/geminiService';
 import Sidebar from '../components/Sidebar';
 
@@ -98,7 +99,13 @@ const AppContent: React.FC = () => {
     setGoals,
     setLoading,
     updateLead,
-    setLeads
+    setLeads,
+    isFirstTime,
+    completeOnboarding,
+    connectWhatsApp,
+    isWhatsAppConnected,
+    addLead,
+    addListing
   } = useAppContext();
 
   const [selectedListingForMarketing, setSelectedListingForMarketing] = React.useState<Listing | null>(null);
@@ -106,14 +113,13 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     // Initialize listings if they're not already set
     if (listings.length === 0) {
-      // @ts-ignore - ignoring the missing score fields for mock data
-      listings.forEach(listing => updateListing(listing));
+      mockListingsData.forEach(listing => addListing(listing));
     }
   }, []);
 
   useEffect(() => {
     // Only fetch scores if we are logged in to save API calls
-    if (isLoggedIn && leads.length === 0) {
+    if (isLoggedIn && leads.filter(l => l.id !== 'user-self').length === 0) {
       const fetchScores = async () => {
         setLoading(true);
         try {
@@ -123,16 +129,36 @@ const AppContent: React.FC = () => {
             return { ...leadForScoring, ...scoreData };
           });
           const scoredLeads = await Promise.all(scoredLeadsPromises);
+
+          // Add self-chat lead
+          const selfLead: Lead = {
+            id: 'user-self',
+            name: 'My AI Assistant (Me)',
+            status: 'Nurturing',
+            source: 'WhatsApp',
+            score: 100,
+            temperature: 'Hot',
+            justification: 'This is your personal AI workspace. Use it to test prompts, ask for advice, or just chat with your agent.',
+            nextAction: 'Ask me anything about your listings or leads!',
+            history: [{ id: 'h-self', date: 'Always active', description: 'Workspace initialized.' }],
+            notes: 'Personal AI assistant space.',
+            conversation: [
+              { id: 'c-self-1', sender: 'user', text: "Hi Tunde! I'm your Afrimmo AI assistant. You can chat with me here to test my responses or ask for help with your real estate tasks.", timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+            ]
+          };
+
+          const allLeads = [...scoredLeads, selfLead];
+
           // Sort leads by score
-          const sortedLeads = scoredLeads.sort((a, b) => (b.score || 0) - (a.score || 0));
+          const sortedLeads = allLeads.sort((a, b) => (b.score || 0) - (a.score || 0));
           
           // Update leads in context
-          sortedLeads.forEach(lead => updateLead(lead));
+          setLeads(sortedLeads);
         } catch (error) {
           console.error("Failed to score leads:", error);
           // Fallback to unscored leads if AI fails
-          const unscoredLeads = mockLeadsData.map(l => ({...l, history: l.history || [], notes: l.notes || '', conversation: l.conversation || []}));
-          unscoredLeads.forEach(lead => updateLead(lead));
+          const unscoredLeads = mockLeadsData.map(l => ({...l, history: l.history || [], notes: l.notes || '', conversation: l.conversation || []})) as Lead[];
+          setLeads(unscoredLeads);
         } finally {
           setLoading(false);
         }
@@ -171,6 +197,10 @@ const AppContent: React.FC = () => {
 
   if (!isLoggedIn) {
       return <LandingPage onLogin={login} />;
+  }
+
+  if (isFirstTime) {
+      return <Onboarding onComplete={completeOnboarding} connectWhatsApp={connectWhatsApp} listings={listings} />;
   }
 
   return (

@@ -9,6 +9,8 @@ interface AppState {
   isLoading: boolean;
   isLoggedIn: boolean;
   currentPage: string;
+  isFirstTime: boolean;
+  isWhatsAppConnected: boolean;
 }
 
 // Define action types
@@ -23,7 +25,9 @@ type AppAction =
   | { type: 'SET_LOGIN_STATUS'; payload: boolean }
   | { type: 'SET_CURRENT_PAGE'; payload: string }
   | { type: 'ADD_LEAD'; payload: Lead }
-  | { type: 'ADD_LISTING'; payload: Listing };
+  | { type: 'ADD_LISTING'; payload: Listing }
+  | { type: 'COMPLETE_ONBOARDING' }
+  | { type: 'CONNECT_WHATSAPP'; payload: boolean };
 
 // Initial state
 const initialState: AppState = {
@@ -36,6 +40,8 @@ const initialState: AppState = {
   isLoading: false,
   isLoggedIn: false,
   currentPage: 'today',
+  isFirstTime: true,
+  isWhatsAppConnected: false,
 };
 
 // Reducer function
@@ -74,6 +80,10 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
       return { ...state, leads: [...state.leads, action.payload] };
     case 'ADD_LISTING':
       return { ...state, listings: [...state.listings, action.payload] };
+    case 'COMPLETE_ONBOARDING':
+      return { ...state, isFirstTime: false };
+    case 'CONNECT_WHATSAPP':
+      return { ...state, isWhatsAppConnected: action.payload };
     default:
       return state;
   }
@@ -92,6 +102,8 @@ interface AppContextType extends AppState {
   login: () => void;
   logout: () => void;
   navigateTo: (page: string) => void;
+  completeOnboarding: () => void;
+  connectWhatsApp: (status: boolean) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -145,6 +157,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const completeOnboarding = () => {
+    dispatch({ type: 'COMPLETE_ONBOARDING' });
+  };
+
+  const connectWhatsApp = (status: boolean) => {
+    dispatch({ type: 'CONNECT_WHATSAPP', payload: status });
+  };
+
   const contextValue: AppContextType = {
     ...state,
     dispatch,
@@ -158,6 +178,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     login,
     logout,
     navigateTo,
+    completeOnboarding,
+    connectWhatsApp,
   };
 
   return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;

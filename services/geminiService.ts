@@ -221,6 +221,36 @@ export const generateAdCampaign = async (propertyDetails: string, objective: Mar
 };
 
 
+export const generateAssistantResponse = async (conversationHistory: string): Promise<string> => {
+    const prompt = `
+    You are 'Afrimmo AI', the user's personal real estate assistant.
+    The user (a real estate agent) is chatting with you to get advice, test your capabilities, or ask for help with tasks.
+
+    Be helpful, professional, and supportive. You can provide advice on listings, help draft messages, or explain how to use the Afrimmo platform.
+
+    Keep your responses concise and friendly. Use emojis where appropriate.
+
+    Current conversation:
+    ${conversationHistory}
+
+    Assistant Response:
+    `;
+    // Check if AI is available
+    if (!ai) {
+      return "AI service not available. I'm here to help, but I can't process complex queries right now.";
+    }
+
+    try {
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent([{ text: prompt }]);
+        const response = await result.response;
+        return response.text() || "I'm here to help! What can I do for you today?";
+    } catch (error) {
+        console.error("Error generating assistant response:", error);
+        return "I'm having a bit of trouble connecting to my brain right now, but I'm still here to help!";
+    }
+};
+
 export const generateWhatsAppReply = async (conversationHistory: string): Promise<string> => {
     const prompt = `
     You are 'Afrimmo AI', a helpful and professional real estate assistant for an agent in Africa.

@@ -220,32 +220,34 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ lead, onSendMessage, onUpda
       {/* Input Area */}
       <div className="p-3 bg-slate-900 border-t border-slate-800">
         {/* Quick Actions Toolbar */}
-        <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide">
-            <button 
-                onClick={handleGetReply} 
-                disabled={isLoadingSuggestion}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-full text-xs font-medium text-emerald-400 border border-emerald-500/20 whitespace-nowrap transition-colors disabled:opacity-50"
-            >
-                <SparklesIcon className="w-3.5 h-3.5"/>
-                {isLoadingSuggestion ? 'Drafting...' : 'Draft Reply'}
-            </button>
-            <button 
-                onClick={handleGetSuggestions} 
-                disabled={isSuggesting}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-full text-xs font-medium text-purple-400 border border-purple-500/20 whitespace-nowrap transition-colors disabled:opacity-50"
-            >
-                <SparklesIcon className="w-3.5 h-3.5"/>
-                {isSuggesting ? 'Thinking...' : 'Suggestions'}
-            </button>
-             <button 
-                onClick={handleScheduleViewing} 
-                disabled={isLoadingAction}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-full text-xs font-medium text-blue-400 border border-blue-500/20 whitespace-nowrap transition-colors disabled:opacity-50"
-            >
-                <CalendarDaysIcon className="w-3.5 h-3.5"/>
-                {isLoadingAction ? 'Processing...' : 'Propose Viewing'}
-            </button>
-        </div>
+        {lead.id !== 'user-self' && (
+          <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide">
+              <button
+                  onClick={handleGetReply}
+                  disabled={isLoadingSuggestion}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-full text-xs font-medium text-emerald-400 border border-emerald-500/20 whitespace-nowrap transition-colors disabled:opacity-50"
+              >
+                  <SparklesIcon className="w-3.5 h-3.5"/>
+                  {isLoadingSuggestion ? 'Drafting...' : 'Draft Reply'}
+              </button>
+              <button
+                  onClick={handleGetSuggestions}
+                  disabled={isSuggesting}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-full text-xs font-medium text-purple-400 border border-purple-500/20 whitespace-nowrap transition-colors disabled:opacity-50"
+              >
+                  <SparklesIcon className="w-3.5 h-3.5"/>
+                  {isSuggesting ? 'Thinking...' : 'Suggestions'}
+              </button>
+               <button
+                  onClick={handleScheduleViewing}
+                  disabled={isLoadingAction}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-full text-xs font-medium text-blue-400 border border-blue-500/20 whitespace-nowrap transition-colors disabled:opacity-50"
+              >
+                  <CalendarDaysIcon className="w-3.5 h-3.5"/>
+                  {isLoadingAction ? 'Processing...' : 'Propose Viewing'}
+              </button>
+          </div>
+        )}
 
         <div className="flex items-end gap-2">
             <div className="flex-1 bg-slate-800 rounded-2xl border border-slate-700 focus-within:border-emerald-500/50 focus-within:ring-1 focus-within:ring-emerald-500/20 transition-all">

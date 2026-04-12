@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import Card from './Card';
 import Button from './Button';
 import { Page, Lead, Listing, AgentGoals } from '../types';
-import { ListingsIcon, LeadsIcon, PropertyValuatorIcon, WhatsAppIcon, SendIcon, PlusIcon, TrashIcon, CheckIcon, BellIcon, TargetIcon, MoneyIcon } from './IconComponents';
+import { ListingsIcon, LeadsIcon, PropertyValuatorIcon, WhatsAppIcon, SendIcon, PlusIcon, TrashIcon, CheckIcon, BellIcon, TargetIcon, MoneyIcon, SparklesIcon, VideoIcon } from './IconComponents';
+import { useAppContext } from '../src/contexts/AppContext';
 
 interface TodayProps {
     setActivePage: (page: Page) => void;
@@ -69,6 +70,7 @@ const CircularProgress: React.FC<{ percentage: number, label: string, value: str
 }
 
 const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings, goals }) => {
+  const { isWhatsAppConnected } = useAppContext();
   const activeListingsCount = listings.filter(l => l.status === 'Available').length;
   const newLeadsCount = leads.filter(l => l.status === 'New').length;
   const hotLeadsCount = leads.filter(l => l.temperature === 'Hot').length;
@@ -163,6 +165,39 @@ const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings, goals }) 
             <Button onClick={() => setActivePage('leads')} size="small">+ Lead</Button>
         </div>
       </div>
+
+      {/* Getting Started Checklist */}
+      {(!isWhatsAppConnected || hotLeadsCount === 0) && (
+          <Card className="bg-gradient-to-r from-emerald-950/40 to-slate-900 border-emerald-500/20">
+              <div className="flex items-center gap-2 mb-4">
+                  <SparklesIcon className="w-5 h-5 text-emerald-400" />
+                  <h2 className="text-lg font-bold text-white">Getting Started Checklist</h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <ChecklistItem
+                    title="Connect WhatsApp"
+                    description="Enable AI replies for your leads."
+                    completed={isWhatsAppConnected}
+                    onClick={() => setActivePage('settings')}
+                    icon={<WhatsAppIcon className="w-5 h-5" />}
+                  />
+                  <ChecklistItem
+                    title="Create AI Video"
+                    description="Turn photos into viral tours."
+                    completed={false}
+                    onClick={() => setActivePage('marketing')}
+                    icon={<VideoIcon className="w-5 h-5" />}
+                  />
+                  <ChecklistItem
+                    title="Chat with your AI"
+                    description="Try the 'My AI Assistant' lead."
+                    completed={leads.some(l => l.id === 'user-self' && (l.conversation?.length || 0) > 1)}
+                    onClick={() => setActivePage('leads')}
+                    icon={<LeadsIcon className="w-5 h-5" />}
+                  />
+              </div>
+          </Card>
+      )}
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -334,5 +369,24 @@ const Today: React.FC<TodayProps> = ({ setActivePage, leads, listings, goals }) 
     </div>
   );
 };
+
+const ChecklistItem: React.FC<{ title: string, description: string, completed: boolean, onClick: () => void, icon: React.ReactNode }> = ({ title, description, completed, onClick, icon }) => (
+    <button
+        onClick={onClick}
+        className={`flex items-center gap-4 p-4 rounded-xl border transition-all text-left ${
+            completed
+            ? 'bg-emerald-500/5 border-emerald-500/20 opacity-70'
+            : 'bg-slate-900/50 border-slate-800 hover:border-emerald-500/50 hover:bg-slate-800/80'
+        }`}
+    >
+        <div className={`p-2 rounded-lg ${completed ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'}`}>
+            {completed ? <CheckIcon className="w-5 h-5" /> : icon}
+        </div>
+        <div className="flex-1 min-w-0">
+            <h3 className={`text-sm font-bold ${completed ? 'text-emerald-400 line-through' : 'text-white'}`}>{title}</h3>
+            <p className="text-xs text-slate-500 truncate">{description}</p>
+        </div>
+    </button>
+);
 
 export default Today;
