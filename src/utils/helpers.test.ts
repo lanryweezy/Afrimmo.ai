@@ -5,13 +5,17 @@ import { formatCurrency, formatDate, isValidEmail, generateId } from './helpers'
 describe('Helper Functions', () => {
   describe('formatCurrency', () => {
     it('formats currency correctly', () => {
-      expect(formatCurrency(1000000)).toBe('₦1,000,000');
-      expect(formatCurrency(500000, 'USD')).toBe('$500,000');
+      // Use regex to match currency symbols as they can vary by environment (e.g. "US$ " vs "$")
+      const ngnResult = formatCurrency(1000000);
+      expect(ngnResult).toMatch(/₦\s?1,000,000/);
+
+      const usdResult = formatCurrency(500000, 'USD');
+      expect(usdResult).toMatch(/\$500,000|US\$500,000/);
     });
 
     it('handles zero and negative values', () => {
-      expect(formatCurrency(0)).toBe('₦0');
-      expect(formatCurrency(-1000)).toBe('-₦1,000');
+      expect(formatCurrency(0)).toMatch(/₦\s?0/);
+      expect(formatCurrency(-1000)).toMatch(/-₦\s?1,000/);
     });
   });
 

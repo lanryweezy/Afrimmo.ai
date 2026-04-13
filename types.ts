@@ -97,6 +97,7 @@ export interface Lead {
     justification?: string;
     nextAction?: string;
     conversation?: ChatMessage[];
+    aiAutopilot?: boolean;
 }
 
 export type ListingStatus = 'Available' | 'Under Offer' | 'Sold';

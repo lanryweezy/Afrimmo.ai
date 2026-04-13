@@ -5,6 +5,7 @@ import Button from './Button';
 import { generateSocialBundle, generateListingVideo } from '../services/geminiService';
 import { SocialBundle, Listing } from '../types';
 import { SparklesIcon, CheckIcon, InstagramIcon, WhatsAppIcon, VideoIcon, ImageIcon } from './IconComponents';
+import { useToast } from '../src/contexts/ToastContext';
 
 interface AddListingWizardProps {
     onClose: () => void;
@@ -13,6 +14,7 @@ interface AddListingWizardProps {
 
 const AddListingWizard: React.FC<AddListingWizardProps> = ({ onClose, onPublish }) => {
     const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+    const { showToast } = useToast();
     const [address, setAddress] = useState('');
     const [price, setPrice] = useState('');
     const [beds, setBeds] = useState('');
@@ -33,6 +35,10 @@ const AddListingWizard: React.FC<AddListingWizardProps> = ({ onClose, onPublish 
         if (e.target.files) {
             const files = Array.from(e.target.files);
             files.forEach(file => {
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast(`Image ${file.name} is too large. Max size is 5MB.`, 'error');
+                    return;
+                }
                 const reader = new FileReader();
                 reader.onload = (ev) => {
                     const result = ev.target?.result as string;
@@ -43,6 +49,10 @@ const AddListingWizard: React.FC<AddListingWizardProps> = ({ onClose, onPublish 
                 reader.readAsDataURL(file as Blob);
             });
         }
+    };
+
+    const removeImage = (index: number) => {
+        setSelectedImages(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleGenerate = async () => {
@@ -72,7 +82,7 @@ const AddListingWizard: React.FC<AddListingWizardProps> = ({ onClose, onPublish 
             setStep(4);
         } catch (error) {
             console.error(error);
-            alert("Error generating content. Please ensure you have uploaded valid photos.");
+            showToast("Error generating content. Please ensure you have uploaded valid photos.", 'error');
             setStep(2);
         } finally {
             setIsProcessing(false);
@@ -140,7 +150,15 @@ const AddListingWizard: React.FC<AddListingWizardProps> = ({ onClose, onPublish 
                                 {selectedImages.length > 0 ? (
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                                         {selectedImages.map((img, idx) => (
-                                            <img key={idx} src={img} alt={`Upload ${idx}`} className="h-24 w-full object-cover rounded-lg shadow-sm" />
+                                            <div key={idx} className="relative group/img">
+                                                <img src={img} alt={`Upload ${idx}`} className="h-24 w-full object-cover rounded-lg shadow-sm" />
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); removeImage(idx); }}
+                                                    className="absolute top-1 right-1 bg-rose-500 text-white rounded-full p-1 opacity-0 group-hover/img:opacity-100 transition-opacity"
+                                                >
+                                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                                </button>
+                                            </div>
                                         ))}
                                         <div className="h-24 flex items-center justify-center bg-slate-800 rounded-lg border border-slate-700 text-slate-400 text-xs">
                                             + Add More
@@ -186,9 +204,9 @@ const AddListingWizard: React.FC<AddListingWizardProps> = ({ onClose, onPublish 
                                 <p className="text-slate-400 text-sm">Your listing is ready for all platforms.</p>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden">
                                 {/* Video Preview */}
-                                <div>
+                                <div className="min-h-[400px] md:h-auto">
                                     <label className="text-xs font-bold text-slate-500 uppercase mb-2 block">Generated Video Tour</label>
                                     <div className="aspect-[9/16] bg-black rounded-lg overflow-hidden relative shadow-lg border border-slate-700">
                                         {videoUrl ? (

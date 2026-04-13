@@ -3,8 +3,10 @@
 import React, { useState } from 'react';
 import Card from './Card';
 import Button from './Button';
-import { UserIcon, CreditCardIcon, SettingsIcon, BadgeCheckIcon, CheckIcon, TargetIcon } from './IconComponents';
+import { UserIcon, CreditCardIcon, SettingsIcon, BadgeCheckIcon, CheckIcon, TargetIcon, WhatsAppIcon } from './IconComponents';
 import { AgentGoals } from '../types';
+import { useAppContext } from '../src/contexts/AppContext';
+import WhatsAppConnect from './WhatsAppConnect';
 
 interface SettingsProps {
     goals?: AgentGoals;
@@ -12,6 +14,7 @@ interface SettingsProps {
 }
 
 const Settings: React.FC<SettingsProps> = ({ goals, onUpdateGoals }) => {
+    const { isWhatsAppConnected, connectWhatsApp } = useAppContext();
     const [activeTab, setActiveTab] = useState<'profile' | 'billing' | 'integrations' | 'goals'>('profile');
     const [formData, setFormData] = useState({
         fullName: 'Tunde Bakare',
@@ -222,35 +225,56 @@ const Settings: React.FC<SettingsProps> = ({ goals, onUpdateGoals }) => {
                     )}
 
                     {activeTab === 'integrations' && (
-                        <Card>
-                            <h2 className="text-xl font-bold text-white mb-6">Connected Apps</h2>
-                            <div className="space-y-4">
-                                {[
-                                    { name: 'WhatsApp Business', icon: 'bg-green-500', status: 'Connected', desc: 'Sync chats and automate replies.' },
-                                    { name: 'Instagram', icon: 'bg-pink-500', status: 'Connected', desc: 'Auto-publish posts and stories.' },
-                                    { name: 'Google Calendar', icon: 'bg-blue-500', status: 'Not Connected', desc: 'Sync viewings and appointments.' },
-                                    { name: 'HubSpot CRM', icon: 'bg-orange-500', status: 'Not Connected', desc: 'Export leads automatically.' },
-                                ].map((app, i) => (
-                                    <div key={i} className="flex items-center justify-between p-4 bg-slate-900/50 rounded-xl border border-slate-800">
-                                        <div className="flex items-center gap-4">
-                                            <div className={`w-10 h-10 rounded-lg ${app.icon} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
-                                                {app.name[0]}
+                        <div className="space-y-6">
+                            {!isWhatsAppConnected && (
+                                <div className="mb-6">
+                                    <WhatsAppConnect onConnected={() => connectWhatsApp(true)} />
+                                </div>
+                            )}
+                            <Card>
+                                <h2 className="text-xl font-bold text-white mb-6">Connected Apps</h2>
+                                <div className="space-y-4">
+                                    {[
+                                        {
+                                            name: 'WhatsApp Business',
+                                            icon: 'bg-green-500',
+                                            status: isWhatsAppConnected ? 'Connected' : 'Not Connected',
+                                            desc: 'Sync chats and automate replies.'
+                                        },
+                                        { name: 'Instagram', icon: 'bg-pink-500', status: 'Connected', desc: 'Auto-publish posts and stories.' },
+                                        { name: 'Google Calendar', icon: 'bg-blue-500', status: 'Not Connected', desc: 'Sync viewings and appointments.' },
+                                        { name: 'HubSpot CRM', icon: 'bg-orange-500', status: 'Not Connected', desc: 'Export leads automatically.' },
+                                    ].map((app, i) => (
+                                        <div key={i} className="flex items-center justify-between p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-10 h-10 rounded-lg ${app.icon} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
+                                                    {app.name === 'WhatsApp Business' ? <WhatsAppIcon className="w-6 h-6" /> : app.name[0]}
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-white text-sm">{app.name}</h3>
+                                                    <p className="text-slate-500 text-xs">{app.desc}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h3 className="font-bold text-white text-sm">{app.name}</h3>
-                                                <p className="text-slate-500 text-xs">{app.desc}</p>
+                                            <div className="flex items-center gap-3">
+                                                {app.status === 'Connected' && <span className="text-emerald-400 text-xs font-bold flex items-center gap-1"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Active</span>}
+                                                <Button
+                                                    size="small"
+                                                    variant={app.status === 'Connected' ? 'secondary' : 'primary'}
+                                                    onClick={() => {
+                                                        if (app.name === 'WhatsApp Business' && app.status !== 'Connected') {
+                                                            // Scroll to WhatsAppConnect if we were to have multiple,
+                                                            // but for now the UI handles it
+                                                        }
+                                                    }}
+                                                >
+                                                    {app.status === 'Connected' ? 'Configure' : 'Connect'}
+                                                </Button>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            {app.status === 'Connected' && <span className="text-emerald-400 text-xs font-bold flex items-center gap-1"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Active</span>}
-                                            <Button size="small" variant={app.status === 'Connected' ? 'secondary' : 'primary'}>
-                                                {app.status === 'Connected' ? 'Configure' : 'Connect'}
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </Card>
+                                    ))}
+                                </div>
+                            </Card>
+                        </div>
                     )}
                 </div>
             </div>

@@ -8,7 +8,13 @@ interface AppState {
   goals: AgentGoals;
   isLoading: boolean;
   isLoggedIn: boolean;
-  currentPage: string;
+  currentPage: Page;
+  isFirstTime: boolean;
+  isWhatsAppConnected: boolean;
+  onboardingProgress: {
+    videoCreated: boolean;
+    aiChatTested: boolean;
+  };
 }
 
 // Define action types
@@ -23,20 +29,42 @@ type AppAction =
   | { type: 'SET_LOGIN_STATUS'; payload: boolean }
   | { type: 'SET_CURRENT_PAGE'; payload: string }
   | { type: 'ADD_LEAD'; payload: Lead }
-  | { type: 'ADD_LISTING'; payload: Listing };
+  | { type: 'ADD_LISTING'; payload: Listing }
+  | { type: 'COMPLETE_ONBOARDING' }
+  | { type: 'RESTART_ONBOARDING' }
+  | { type: 'UPDATE_ONBOARDING_PROGRESS'; payload: Partial<AppState['onboardingProgress']> }
+  | { type: 'CONNECT_WHATSAPP'; payload: boolean };
 
-// Initial state
-const initialState: AppState = {
-  leads: [],
-  listings: [],
-  goals: {
-    monthlyRevenueTarget: 100000000,
-    dealsTarget: 3
-  },
-  isLoading: false,
-  isLoggedIn: false,
-  currentPage: 'today',
+// Initial state helper
+const getInitialState = (): AppState => {
+  const savedState = localStorage.getItem('afrimmo_state');
+  if (savedState) {
+    try {
+      return JSON.parse(savedState);
+    } catch (e) {
+      console.error("Failed to parse saved state", e);
+    }
+  }
+  return {
+    leads: [],
+    listings: [],
+    goals: {
+      monthlyRevenueTarget: 100000000,
+      dealsTarget: 3
+    },
+    isLoading: false,
+    isLoggedIn: false,
+    currentPage: 'today',
+    isFirstTime: true,
+    isWhatsAppConnected: false,
+    onboardingProgress: {
+      videoCreated: false,
+      aiChatTested: false,
+    },
+  };
 };
+
+const initialState: AppState = getInitialState();
 
 // Reducer function
 const appReducer = (state: AppState, action: AppAction): AppState => {
@@ -69,11 +97,19 @@ const appReducer = (state: AppState, action: AppAction): AppState => {
     case 'SET_LOGIN_STATUS':
       return { ...state, isLoggedIn: action.payload };
     case 'SET_CURRENT_PAGE':
-      return { ...state, currentPage: action.payload };
+      return { ...state, currentPage: action.payload as Page };
     case 'ADD_LEAD':
       return { ...state, leads: [...state.leads, action.payload] };
     case 'ADD_LISTING':
       return { ...state, listings: [...state.listings, action.payload] };
+    case 'COMPLETE_ONBOARDING':
+      return { ...state, isFirstTime: false };
+    case 'RESTART_ONBOARDING':
+      return { ...state, isFirstTime: true, onboardingProgress: { videoCreated: false, aiChatTested: false }, isWhatsAppConnected: false };
+    case 'UPDATE_ONBOARDING_PROGRESS':
+      return { ...state, onboardingProgress: { ...state.onboardingProgress, ...action.payload } };
+    case 'CONNECT_WHATSAPP':
+      return { ...state, isWhatsAppConnected: action.payload };
     default:
       return state;
   }
@@ -91,7 +127,11 @@ interface AppContextType extends AppState {
   setLoading: (loading: boolean) => void;
   login: () => void;
   logout: () => void;
-  navigateTo: (page: string) => void;
+  navigateTo: (page: Page) => void;
+  completeOnboarding: () => void;
+  restartOnboarding: () => void;
+  updateOnboardingProgress: (progress: Partial<AppState['onboardingProgress']>) => void;
+  connectWhatsApp: (status: boolean) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -99,6 +139,11 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 // Provider component
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(appReducer, initialState);
+
+  // Persistence effect
+  React.useEffect(() => {
+    localStorage.setItem('afrimmo_state', JSON.stringify(state));
+  }, [state]);
 
   // Helper functions
   const addLead = (lead: Lead) => {
@@ -145,6 +190,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }
   };
 
+  const completeOnboarding = () => {
+    dispatch({ type: 'COMPLETE_ONBOARDING' });
+  };
+
+  const restartOnboarding = () => {
+    dispatch({ type: 'RESTART_ONBOARDING' });
+  };
+
+  const updateOnboardingProgress = (progress: Partial<AppState['onboardingProgress']>) => {
+    dispatch({ type: 'UPDATE_ONBOARDING_PROGRESS', payload: progress });
+  };
+
+  const connectWhatsApp = (status: boolean) => {
+    dispatch({ type: 'CONNECT_WHATSAPP', payload: status });
+  };
+
   const contextValue: AppContextType = {
     ...state,
     dispatch,
@@ -158,6 +219,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     login,
     logout,
     navigateTo,
+    completeOnboarding,
+    restartOnboarding,
+    updateOnboardingProgress,
+    connectWhatsApp,
   };
 
   return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
