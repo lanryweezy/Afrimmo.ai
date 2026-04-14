@@ -5,8 +5,8 @@ import Card from './Card';
 import Button from './Button';
 import { Page, Lead, Listing, AgentGoals } from '../types';
 import { ListingsIcon, LeadsIcon, PropertyValuatorIcon, WhatsAppIcon, SendIcon, PlusIcon, TrashIcon, CheckIcon, BellIcon, TargetIcon, MoneyIcon, SparklesIcon, VideoIcon } from './IconComponents';
-import { useAppContext } from '../src/contexts/AppContext';
-import { useToast } from '../src/contexts/ToastContext';
+import { useAppContext } from '../contexts/AppContext';
+import { useToast } from '../contexts/ToastContext';
 
 interface TodayProps {
     setActivePage: (page: Page) => void;

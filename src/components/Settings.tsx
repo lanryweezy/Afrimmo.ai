@@ -5,7 +5,7 @@ import Card from './Card';
 import Button from './Button';
 import { UserIcon, CreditCardIcon, SettingsIcon, BadgeCheckIcon, CheckIcon, TargetIcon, WhatsAppIcon } from './IconComponents';
 import { AgentGoals } from '../types';
-import { useAppContext } from '../src/contexts/AppContext';
+import { useAppContext } from '../contexts/AppContext';
 import WhatsAppConnect from './WhatsAppConnect';
 
 interface SettingsProps {
