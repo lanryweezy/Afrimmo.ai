@@ -11,7 +11,7 @@ import Tools from '../components/Tools';
 import Settings from '../components/Settings';
 import LandingPage from '../components/LandingPage';
 import Onboarding from '../components/Onboarding';
-import RealEstateSEO from './components/RealEstateSEO';
+import RealEstateSEO from '../components/RealEstateSEO';
 import { Page, Lead, Listing, ChatMessage } from '../types';
 import { scoreLead } from '../services/geminiService';
 import Sidebar from '../components/Sidebar';
