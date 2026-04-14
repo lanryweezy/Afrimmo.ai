@@ -152,6 +152,59 @@ export const generateWhatsAppReply = async (conversationHistory: string): Promis
     }
 };
 
+export const generateWhatsAppSuggestions = async (conversationHistory: string): Promise<string[]> => {
+    const prompt = `
+    You are 'Afrimmo AI'. Based on the WhatsApp conversation history below, generate 3 short, professional, and friendly "Quick Reply" suggestions that the real estate agent can use to respond to the client.
+
+    Current conversation:
+    ${conversationHistory}
+
+    Instructions:
+    - Keep suggestions under 60 characters.
+    - Use emojis where appropriate.
+    - Return as a JSON array of strings.
+    `;
+
+    if (!ai) return ["Available for viewing?", "What is your budget?", "Send more photos"];
+
+    try {
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        return JSON.parse(text.trim());
+    } catch (error) {
+        console.error("Error generating suggestions:", error);
+        return ["I'll check that for you.", "When would you like to visit?", "Can you tell me more about your requirements?"];
+    }
+};
+
+export const generateAssistantResponse = async (conversationHistory: string): Promise<string> => {
+    const prompt = `
+    You are the user's personal AI real estate assistant. This is an internal chat between you and the real estate agent (the user).
+    Your goal is to be supportive, provide advice, help with technical questions about the app, or just engage in helpful professional dialogue.
+
+    User's name is Tunde.
+
+    Current internal conversation:
+    ${conversationHistory}
+
+    AI Assistant Response:
+    `;
+
+    if (!ai) return "I'm here to help, Tunde! (AI service unavailable)";
+
+    try {
+        const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        return response.text();
+    } catch (error) {
+        console.error("Error generating assistant response:", error);
+        return "I'm here to help, but I'm having trouble connecting to my brain right now!";
+    }
+};
+
 export const getMarketInsights = async (query: string): Promise<string> => {
     const prompt = `
     You are a real estate market analyst specializing in the African continent.
