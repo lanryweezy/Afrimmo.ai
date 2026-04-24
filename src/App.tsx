@@ -1,11 +1,9 @@
-
-
 import React from 'react';
-import AppContent from './src/AppContent';
-import { AppProvider } from './src/contexts/AppContext';
-import { ToastProvider } from './src/contexts/ToastContext';
-import ErrorBoundary from './src/components/ui/ErrorBoundary';
-import RealEstateSEO from './src/components/RealEstateSEO';
+import AppContent from './AppContent';
+import { AppProvider } from './contexts/AppContext';
+import { ToastProvider } from './contexts/ToastContext';
+import ErrorBoundary from './components/ui/ErrorBoundary';
+import RealEstateSEO from './components/RealEstateSEO';
 
 const App: React.FC = () => {
   return (

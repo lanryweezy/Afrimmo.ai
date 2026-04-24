@@ -1,20 +1,20 @@
 import React, { useEffect } from 'react';
 import { useAppContext } from './contexts/AppContext';
 import { useRealEstateSEO } from './hooks/useRealEstateSEO';
-import Header from '../components/Header';
-import BottomNavBar from '../components/BottomNavBar';
-import Today from '../components/Today';
-import Leads from '../components/Leads';
-import Listings from '../components/Listings';
-import Marketing from '../components/Marketing';
-import Tools from '../components/Tools';
-import Settings from '../components/Settings';
-import LandingPage from '../components/LandingPage';
-import Onboarding from '../components/Onboarding';
+import Header from './components/Header';
+import BottomNavBar from './components/BottomNavBar';
+import Today from './components/Today';
+import Leads from './components/Leads';
+import Listings from './components/Listings';
+import Marketing from './components/Marketing';
+import Tools from './components/Tools';
+import Settings from './components/Settings';
+import LandingPage from './components/LandingPage';
+import Onboarding from './components/Onboarding';
 import RealEstateSEO from './components/RealEstateSEO';
-import { Page, Lead, Listing, ChatMessage } from '../types';
-import { scoreLead } from '../services/geminiService';
-import Sidebar from '../components/Sidebar';
+import { Page, Lead, Listing, ChatMessage } from './types';
+import { scoreLead } from './services/geminiService';
+import Sidebar from './components/Sidebar';
 
 const mockLeadsData: Omit<Lead, 'score' | 'temperature' | 'justification' | 'nextAction'>[] = [
     {

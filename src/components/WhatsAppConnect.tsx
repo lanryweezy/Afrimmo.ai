@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import Button from './Button';
 import { WhatsAppIcon, CheckIcon, SparklesIcon } from './IconComponents';
-import { useToast } from '../src/contexts/ToastContext';
+import { useToast } from '../contexts/ToastContext';
 
 interface WhatsAppConnectProps {
     onConnected: () => void;

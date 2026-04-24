@@ -5,7 +5,7 @@ import Button from './Button';
 import { generateSocialBundle, generateListingVideo } from '../services/geminiService';
 import { SocialBundle, Listing } from '../types';
 import { SparklesIcon, CheckIcon, InstagramIcon, WhatsAppIcon, VideoIcon, ImageIcon } from './IconComponents';
-import { useToast } from '../src/contexts/ToastContext';
+import { useToast } from '../contexts/ToastContext';
 
 interface AddListingWizardProps {
     onClose: () => void;

@@ -22,8 +22,8 @@ const NavItem: React.FC<{
       onClick={() => setCurrentPage(page)}
       title={isCollapsed ? label : ''}
       className={`group flex items-center w-full ${isCollapsed ? 'justify-center' : 'px-4'} py-3.5 text-sm font-medium transition-all duration-200 rounded-xl mb-1 ${
-        isActive 
-        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+        isActive
+        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
         : 'text-slate-400 hover:bg-slate-800 hover:text-white border border-transparent'
       }`}
     >
@@ -61,46 +61,46 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
               </div>
             )}
         </div>
-        
+
         <div className="flex-1 overflow-y-auto">
             {!isCollapsed && <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 px-4">Menu</div>}
             <nav className="space-y-1">
-                <NavItem 
-                page="today" 
-                label="Dashboard" 
-                currentPage={currentPage} 
+                <NavItem
+                page="today"
+                label="Dashboard"
+                currentPage={currentPage}
                 setCurrentPage={setCurrentPage}
                 icon={<TodayIcon className="w-5 h-5" />}
                 isCollapsed={isCollapsed}
                 />
-                <NavItem 
-                page="leads" 
-                label="Client CRM" 
-                currentPage={currentPage} 
+                <NavItem
+                page="leads"
+                label="Client CRM"
+                currentPage={currentPage}
                 setCurrentPage={setCurrentPage}
                 icon={<LeadsIcon className="w-5 h-5" />}
                 isCollapsed={isCollapsed}
                 />
-                <NavItem 
-                page="listings" 
-                label="Properties" 
-                currentPage={currentPage} 
+                <NavItem
+                page="listings"
+                label="Properties"
+                currentPage={currentPage}
                 setCurrentPage={setCurrentPage}
                 icon={<ListingsIcon className="w-5 h-5" />}
                 isCollapsed={isCollapsed}
                 />
-                <NavItem 
-                page="marketing" 
-                label="Marketing Hub" 
-                currentPage={currentPage} 
+                <NavItem
+                page="marketing"
+                label="Marketing Hub"
+                currentPage={currentPage}
                 setCurrentPage={setCurrentPage}
                 icon={<MarketingIcon className="w-5 h-5" />}
                 isCollapsed={isCollapsed}
                 />
-                <NavItem 
-                page="tools" 
-                label="Smart Tools" 
-                currentPage={currentPage} 
+                <NavItem
+                page="tools"
+                label="Smart Tools"
+                currentPage={currentPage}
                 setCurrentPage={setCurrentPage}
                 icon={<ToolsIcon className="w-5 h-5" />}
                 isCollapsed={isCollapsed}
@@ -109,10 +109,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
 
              {!isCollapsed && <div className="mt-8 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4 px-4">System</div>}
              <nav className="space-y-1">
-                 <NavItem 
-                    page="settings" 
-                    label="Settings & Billing" 
-                    currentPage={currentPage} 
+                 <NavItem
+                    page="settings"
+                    label="Settings & Billing"
+                    currentPage={currentPage}
                     setCurrentPage={setCurrentPage}
                     icon={<SettingsIcon className="w-5 h-5" />}
                     isCollapsed={isCollapsed}

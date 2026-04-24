@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { Lead, Listing, AgentGoals, Page } from '../../types';
+import { Lead, Listing, AgentGoals, Page } from '../types';
 
 // Define the shape of our global state
 interface AppState {
