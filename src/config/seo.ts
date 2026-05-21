@@ -4,7 +4,7 @@ export const SEO_CONFIG = {
   // Site-wide settings
   site: {
     name: 'Afrimmo AI',
-    title: 'Afrimmo AI - AI-Powered Real Estate Agent for Africa',
+    title: 'Afrimmo AI - AI-powered tool for real estate agents',
     description: 'Transform your real estate business with Afrimmo AI. Automated listings, viral marketing content, WhatsApp lead qualification, and more for African property markets.',
     url: 'https://afrimmo.ai',
     type: 'website',
@@ -81,7 +81,7 @@ export const SEO_CONFIG = {
   // Page-specific titles and descriptions
   pages: {
     '/': {
-      title: 'Afrimmo AI - AI-Powered Real Estate Agent for Africa',
+      title: 'Afrimmo AI - AI-powered tool for real estate agents',
       description: 'Transform your real estate business with Afrimmo AI. Automated listings, viral marketing content, WhatsApp lead qualification, and more for African property markets.'
     },
     '/today': {
@@ -118,7 +118,7 @@ export const SEO_CONFIG = {
       "name": "Afrimmo AI",
       "operatingSystem": "Web Browser",
       "applicationCategory": "BusinessApplication",
-      "description": "AI-powered real estate agent for Africa. Automate listings, generate viral marketing content, qualify leads on WhatsApp, and access hyper-local market data.",
+      "description": "AI-powered tool for real estate agents. Automate listings, generate viral marketing content, qualify leads on WhatsApp, and access hyper-local market data.",
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -139,7 +139,7 @@ export const SEO_CONFIG = {
       "@type": "ProfessionalService",
       "serviceType": "Real Estate Agent",
       "name": "Afrimmo AI",
-      "description": "AI-powered real estate agent for Africa. Automate listings, generate viral marketing content, qualify leads on WhatsApp, and access hyper-local market data.",
+      "description": "AI-powered tool for real estate agents. Automate listings, generate viral marketing content, qualify leads on WhatsApp, and access hyper-local market data.",
       "url": "https://afrimmo.ai",
       "logo": "https://afrimmo.ai/logo.png",
       "image": "https://afrimmo.ai/og-image.jpg",

@@ -11,7 +11,7 @@ const App: React.FC = () => {
         <AppProvider>
           <ToastProvider>
             <RealEstateSEO
-              title="Afrimmo AI - AI-Powered Real Estate Agent for Africa"
+              title="Afrimmo AI - AI-powered tool for real estate agents"
               description="Transform your real estate business with Afrimmo AI. Automated listings, viral marketing content, WhatsApp lead qualification, and more for African property markets."
               keywords={[
                 'real estate agent',
@@ -36,19 +36,19 @@ const App: React.FC = () => {
                 'Kigali real estate'
               ]}
               canonicalUrl="https://afrimmo.ai/"
-              ogTitle="Afrimmo AI - AI-Powered Real Estate Agent for Africa"
+              ogTitle="Afrimmo AI - AI-powered tool for real estate agents"
               ogDescription="Transform your real estate business with Afrimmo AI. Automated listings, viral marketing content, WhatsApp lead qualification, and more for African property markets."
               ogImage="https://afrimmo.ai/og-image.png"
               ogUrl="https://afrimmo.ai/"
               twitterCard="summary_large_image"
-              twitterTitle="Afrimmo AI - AI-Powered Real Estate Agent for Africa"
+              twitterTitle="Afrimmo AI - AI-powered tool for real estate agents"
               twitterDescription="Transform your real estate business with Afrimmo AI. Automated listings, viral marketing content, WhatsApp lead qualification, and more for African property markets."
               twitterImage="https://afrimmo.ai/twitter-image.png"
               schema={{
                 "@context": "https://schema.org",
                 "@type": "RealEstateAgent",
                 "name": "Afrimmo AI",
-                "description": "AI-powered real estate agent for Africa. Automate listings, generate viral marketing content, qualify leads on WhatsApp, and access hyper-local market data.",
+                "description": "AI-powered tool for real estate agents. Automate listings, generate viral marketing content, qualify leads on WhatsApp, and access hyper-local market data.",
                 "url": "https://afrimmo.ai/",
                 "image": "https://afrimmo.ai/logo.jpg",
                 "areaServed": "Africa",

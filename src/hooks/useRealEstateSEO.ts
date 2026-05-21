@@ -13,7 +13,7 @@ const realEstatePageSEOData: Record<string, {
   propertyType?: string;
 }> = {
   '/': {
-    title: 'Afrimmo AI - The #1 AI Real Estate Agent for Africa',
+    title: 'Afrimmo AI - AI-powered tool for real estate agents',
     description: 'Afrimmo AI is the ultimate assistant for real estate agents in Africa. Automate property listings, generate viral AI video tours, qualify leads on WhatsApp 24/7, and access hyper-local market data for Lagos, Nairobi, and Accra.',
     keywords: [
       'AI real estate agent Africa',
