@@ -35,7 +35,7 @@ const SEO: React.FC<SEOProps> = ({
   canonicalUrl,
   ogTitle,
   ogDescription,
-  ogImage = 'https://afrimmo.ai/og-image.jpg',
+  ogImage = 'https://afrimmo.ai/og-image.png',
   ogUrl,
   twitterCard = 'summary_large_image',
   twitterTitle,

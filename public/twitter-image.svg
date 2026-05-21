@@ -1,0 +1,48 @@
+<svg width="1200" height="600" viewBox="0 0 1200 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="600" fill="#020617" />
+
+  <!-- Gradient Background -->
+  <defs>
+    <radialGradient id="radialGrad" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:0.15" />
+      <stop offset="100%" style="stop-color:#020617;stop-opacity:0" />
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="600" fill="url(#radialGrad)" />
+
+  <!-- Abstract geometric shapes -->
+  <g opacity="0.2">
+    <path d="M 800 0 L 1200 0 L 1200 400 Z" fill="#10b981" />
+    <path d="M 0 600 L 400 600 L 0 200 Z" fill="#0ea5e9" />
+  </g>
+
+  <!-- Logo and Text -->
+  <g transform="translate(600, 250)">
+    <!-- House Icon -->
+    <path d="M -60 0 L 0 -60 L 60 0 L 60 70 L -60 70 Z" fill="none" stroke="#10b981" stroke-width="12" stroke-linejoin="round" />
+    <path d="M -20 70 L -20 30 L 20 30 L 20 70" fill="none" stroke="#10b981" stroke-width="12" stroke-linejoin="round" />
+
+    <text y="160" font-family="Inter, sans-serif" font-size="100" font-weight="bold" fill="white" text-anchor="middle">
+      Afrimmo <tspan fill="#10b981">AI</tspan>
+    </text>
+    <text y="220" font-family="Inter, sans-serif" font-size="36" fill="#94a3b8" text-anchor="middle">
+      The Future of African Real Estate
+    </text>
+  </g>
+
+  <!-- Floating UI elements representation -->
+  <g transform="translate(100, 100)" opacity="0.6">
+    <rect width="250" height="80" rx="12" fill="#1e293b" stroke="#334155" />
+    <circle cx="40" cy="40" r="20" fill="#10b981" />
+    <rect x="75" y="30" width="120" height="8" rx="4" fill="#94a3b8" />
+    <rect x="75" y="45" width="80" height="8" rx="4" fill="#475569" />
+  </g>
+
+  <g transform="translate(850, 400)" opacity="0.6">
+    <rect width="250" height="80" rx="12" fill="#1e293b" stroke="#334155" />
+    <path d="M 30 50 L 50 30 L 70 50" fill="none" stroke="#10b981" stroke-width="4" />
+    <rect x="85" y="30" width="120" height="8" rx="4" fill="#94a3b8" />
+    <rect x="85" y="45" width="100" height="8" rx="4" fill="#10b981" />
+  </g>
+</svg>

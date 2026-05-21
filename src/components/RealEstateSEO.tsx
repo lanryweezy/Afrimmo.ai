@@ -55,7 +55,7 @@ const RealEstateSEO: React.FC<RealEstateSEOProps> = ({
   canonicalUrl,
   ogTitle,
   ogDescription,
-  ogImage = 'https://afrimmo.ai/og-real-estate.jpg',
+  ogImage = 'https://afrimmo.ai/og-image.png',
   ogUrl,
   twitterCard = 'summary_large_image',
   twitterTitle,

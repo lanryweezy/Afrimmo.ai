@@ -38,12 +38,12 @@ const App: React.FC = () => {
               canonicalUrl="https://afrimmo.ai/"
               ogTitle="Afrimmo AI - AI-Powered Real Estate Agent for Africa"
               ogDescription="Transform your real estate business with Afrimmo AI. Automated listings, viral marketing content, WhatsApp lead qualification, and more for African property markets."
-              ogImage="https://afrimmo.ai/og-real-estate.jpg"
+              ogImage="https://afrimmo.ai/og-image.png"
               ogUrl="https://afrimmo.ai/"
               twitterCard="summary_large_image"
               twitterTitle="Afrimmo AI - AI-Powered Real Estate Agent for Africa"
               twitterDescription="Transform your real estate business with Afrimmo AI. Automated listings, viral marketing content, WhatsApp lead qualification, and more for African property markets."
-              twitterImage="https://afrimmo.ai/twitter-real-estate.jpg"
+              twitterImage="https://afrimmo.ai/twitter-image.png"
               schema={{
                 "@context": "https://schema.org",
                 "@type": "RealEstateAgent",
