@@ -4,9 +4,11 @@ import Card from './Card';
 import Button from './Button';
 import { ChatMessage } from '../types';
 import { generateWhatsAppReply, generateWhatsAppSuggestions } from '../services/geminiService';
+import { useAppContext } from '../contexts/AppContext';
 import { SendIcon, SparklesIcon } from './IconComponents';
 
 const WhatsAppAutomator: React.FC = () => {
+  const { listings } = useAppContext();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
@@ -49,7 +51,7 @@ const WhatsAppAutomator: React.FC = () => {
       .join('\n');
 
     try {
-      const replyText = await generateWhatsAppReply(conversationHistory);
+      const replyText = await generateWhatsAppReply(conversationHistory, listings);
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         sender: 'ai',
@@ -82,7 +84,7 @@ const WhatsAppAutomator: React.FC = () => {
       .join('\n');
     
     try {
-        const result = await generateWhatsAppSuggestions(conversationHistory);
+        const result = await generateWhatsAppSuggestions(conversationHistory, listings);
         setSuggestions(result);
     } catch (err: any) {
         console.error(err);
