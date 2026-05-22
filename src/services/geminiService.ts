@@ -93,16 +93,26 @@ export const generateAdCampaign = async (propertyDetails: string, objective: str
     }
 };
 
-export const generateWhatsAppReply = async (conversationHistory: string): Promise<string> => {
-    const prompt = `
-    You are 'Afrimmo AI', a helpful and professional real estate assistant in Africa.
-    A potential client is messaging on WhatsApp. Build rapport and qualify the lead.
-    Keep responses concise, friendly, and use emojis.
+export const generateWhatsAppReply = async (conversationHistory: string, availableListings: any[] = []): Promise<string> => {
+    const listingsContext = availableListings.length > 0
+        ? `Here are our current available property listings:\n${availableListings.map(l => `- ${l.address}: ${l.price} (${l.beds} beds, ${l.baths} baths). Status: ${l.status}`).join('\n')}`
+        : "We currently have no specific listings to share, but tell them we are sourcing new properties daily.";
 
-    History:
+    const prompt = `
+    You are 'Afrimmo AI', a world-class AI-powered tool for real estate agents.
+    A potential client is messaging an agent on WhatsApp. Your goal is to:
+    1. Build rapport and maintain a professional yet friendly tone.
+    2. Qualify the lead (budget, location preference, timeline).
+    3. If the client asks for a house or properties in a specific area, look at the available listings provided below and suggest the most relevant ones.
+    4. Mention specific details from the listings (price, bed/bath count) to show expertise.
+    5. Keep responses concise and use emojis where appropriate.
+
+    ${listingsContext}
+
+    Conversation History:
     ${conversationHistory}
 
-    AI Response:
+    Agent's AI Response:
     `;
     if (!ai) return "AI service unavailable. (Mock response: I'll check that for you!)";
     
@@ -116,9 +126,18 @@ export const generateWhatsAppReply = async (conversationHistory: string): Promis
     }
 };
 
-export const generateWhatsAppSuggestions = async (conversationHistory: string): Promise<string[]> => {
+export const generateWhatsAppSuggestions = async (conversationHistory: string, availableListings: any[] = []): Promise<string[]> => {
+    const listingsContext = availableListings.length > 0
+        ? `Available listings for context: ${availableListings.map(l => l.address).join(', ')}`
+        : "";
+
     const prompt = `
-    Generate 3 short "Quick Reply" suggestions for a real estate agent based on this WhatsApp chat:
+    Based on this WhatsApp chat history and available properties, generate 3 short "Quick Reply" suggestions for the real estate agent.
+    If the client is asking for properties, one suggestion should be to share details of a specific matching listing from the context.
+
+    ${listingsContext}
+
+    History:
     ${conversationHistory}
 
     Return as a JSON array of strings. Max 60 chars each.

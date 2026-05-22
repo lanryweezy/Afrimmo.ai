@@ -8,7 +8,7 @@ export const generateMetaTags = (pageData: {
   url: string;
   image?: string;
 }): string => {
-  const image = pageData.image || 'https://afrimmo.ai/default-og-image.jpg';
+  const image = pageData.image || 'https://afrimmo.ai/og-image.png';
   
   return `
     <title>${pageData.title}</title>

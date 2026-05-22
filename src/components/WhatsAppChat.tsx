@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Lead, ChatMessage, LeadInteraction } from '../types';
 import { generateWhatsAppReply, runChatAction, generateWhatsAppSuggestions } from '../services/geminiService';
+import { useAppContext } from '../contexts/AppContext';
 import Button from './Button';
 import { SparklesIcon, PaperAirplaneIcon, CalendarDaysIcon, CheckIcon } from './IconComponents';
 
@@ -13,6 +14,7 @@ interface WhatsAppChatProps {
 }
 
 const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ lead, onSendMessage, onUpdateHistory, onToggleAutopilot }) => {
+  const { listings } = useAppContext();
   const [input, setInput] = useState('');
   const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
   const [isLoadingAction, setIsLoadingAction] = useState(false);
@@ -54,7 +56,7 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ lead, onSendMessage, onUpda
       .join('\n');
     
     try {
-        const reply = await generateWhatsAppReply(conversationHistory);
+        const reply = await generateWhatsAppReply(conversationHistory, listings);
         setSuggestedReply(reply);
     } catch (err: any) {
         console.error("Failed to get suggestion:", err);
@@ -74,7 +76,7 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ lead, onSendMessage, onUpda
       .join('\n');
     
     try {
-        const results = await generateWhatsAppSuggestions(conversationHistory);
+        const results = await generateWhatsAppSuggestions(conversationHistory, listings);
         setSuggestions(results);
     } catch (err: any) {
         console.error("Failed to get suggestions:", err);

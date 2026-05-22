@@ -12,7 +12,7 @@ const pageSEOData: Record<string, {
   twitterDescription?: string;
 }> = {
   '/': {
-    title: 'Afrimmo AI - AI-Powered Real Estate Agent for Africa',
+    title: 'Afrimmo AI - AI-powered tool for real estate agents',
     description: 'Transform your real estate business with Afrimmo AI. Automated listings, viral marketing content, WhatsApp lead qualification, and more for African property markets.',
     keywords: ['real estate AI', 'property management', 'real estate marketing', 'WhatsApp automation', 'property listings', 'African real estate']
   },

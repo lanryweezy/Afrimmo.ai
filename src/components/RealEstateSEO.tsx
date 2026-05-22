@@ -33,7 +33,7 @@ interface RealEstateSEOProps {
 }
 
 const RealEstateSEO: React.FC<RealEstateSEOProps> = ({
-  title = 'Afrimmo AI - AI-Powered Real Estate Agent for Africa',
+  title = 'Afrimmo AI - AI-powered tool for real estate agents',
   description = 'Transform your real estate business with Afrimmo AI. Automated listings, viral marketing content, WhatsApp lead qualification, and more for African property markets.',
   keywords = [
     'real estate agent',
@@ -55,7 +55,7 @@ const RealEstateSEO: React.FC<RealEstateSEOProps> = ({
   canonicalUrl,
   ogTitle,
   ogDescription,
-  ogImage = 'https://afrimmo.ai/og-real-estate.jpg',
+  ogImage = 'https://afrimmo.ai/og-image.png',
   ogUrl,
   twitterCard = 'summary_large_image',
   twitterTitle,
